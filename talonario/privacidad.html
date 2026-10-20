@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Privacidad · Talonario</title>
+<meta name="description" content="Qué datos trata Talonario y dónde se guardan: todo en tu navegador, sin servidor ni cookies.">
+<meta name="robots" content="noindex, follow">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='6' fill='none' stroke='%23C53A30' stroke-width='3'/%3E%3Cpath d='M9 11h14M16 11v12' stroke='%23C53A30' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/fonts.css">
+<style>
+:root { --papel: #E7ECF1; --tinta: #17223B; --sello: #C53A30; --raya: #C4CFDA; --lapiz: #5B6878; }
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--papel); color: var(--tinta); font: 16px/1.55 "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif; font-optical-sizing: auto; }
+a { color: inherit; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; }
+.cab { max-width: 760px; margin: 0 auto; padding: 18px 20px 0; display: flex; align-items: baseline; justify-content: space-between; gap: 16px; }
+.marca { text-decoration: none; font-size: 24px; font-weight: 700; letter-spacing: -.02em; }
+.cab a.volver { color: var(--lapiz); font-size: 15px; }
+main { max-width: 760px; margin: 0 auto; padding: 28px 20px 60px; }
+h1 { font-size: 30px; line-height: 1.15; font-weight: 600; letter-spacing: -.015em; margin: 0 0 6px; text-wrap: balance; }
+.fecha { color: var(--lapiz); margin: 0 0 26px; }
+h2 { font-size: 20px; font-weight: 600; margin: 34px 0 8px; padding-top: 18px; border-top: 3px double var(--raya); }
+p, li { max-width: 66ch; }
+p { margin: 0 0 12px; }
+ul { padding-left: 20px; margin: 0 0 12px; }
+table { border-collapse: collapse; width: 100%; max-width: 66ch; margin: 0 0 12px; font-size: 15px; }
+th, td { text-align: left; vertical-align: top; padding: 8px 10px 8px 0; border-bottom: 1px solid var(--raya); }
+th { font-weight: 600; border-bottom: 1.5px solid var(--tinta); }
+.pendiente { background: rgba(197, 58, 48, .1); color: var(--sello); padding: 0 4px; border-radius: 3px; font-weight: 600; }
+.pie { max-width: 760px; margin: 0 auto; padding: 18px 20px 36px; color: var(--lapiz); font-size: 14px; border-top: 1px solid var(--raya); }
+</style>
+</head>
+<body>
+<header class="cab"><a class="marca" href="./">Talonario</a><a class="volver" href="./">Volver a la app</a></header>
+<main>
+  <h1>Privacidad: tus datos se quedan en tu navegador</h1>
+  <p class="fecha">Última actualización: <span class="pendiente">[[FECHA]]</span></p>
+
+  <p>Talonario no tiene servidor ni cuentas de usuario. Lo que escribes en la app (tus datos, los de tus clientes y las facturas) se guarda solo en el almacenamiento local de tu navegador, en tu dispositivo. No se envía a ningún sitio y el titular de la web no puede verlo.</p>
+
+  <h2>Responsable</h2>
+  <p><span class="pendiente">[[NOMBRE Y APELLIDOS O RAZÓN SOCIAL]]</span>, NIF <span class="pendiente">[[NIF]]</span>, <span class="pendiente">[[DIRECCIÓN]]</span>. Contacto: <span class="pendiente">[[CORREO DE CONTACTO]]</span>.</p>
+
+  <h2>Qué datos se tratan y dónde</h2>
+  <table>
+    <tr><th>Dato</th><th>Dónde se guarda</th><th>Para qué</th></tr>
+    <tr><td>Tu nombre, NIF, dirección, correo, teléfono y logo</td><td>Solo en tu navegador (localStorage)</td><td>Rellenar la siguiente factura sin volver a escribirlos</td></tr>
+    <tr><td>Datos de tus clientes y facturas emitidas</td><td>Solo en tu navegador (funciones Pro)</td><td>Autocompletar clientes y reabrir facturas</td></tr>
+    <tr><td>Clave de licencia Pro</td><td>En tu navegador y en la plataforma de pago</td><td>Comprobar que la clave es válida cuando la pegas</td></tr>
+    <tr><td>Dirección IP y datos técnicos de la visita</td><td>Registros del proveedor de alojamiento (<span class="pendiente">[[PROVEEDOR DE HOSTING]]</span>)</td><td>Servir la web y seguridad; se conservan el tiempo que marque el proveedor</td></tr>
+  </table>
+  <p>Si borras los datos de navegación, se borran también tus facturas guardadas. Descarga y conserva tus PDF; en Pro puedes exportar una copia de todo en un archivo.</p>
+
+  <h2>Compra de Talonario Pro</h2>
+  <p>El pago lo gestiona <span class="pendiente">[[Lemon Squeezy / Gumroad]]</span>, que trata tu nombre, correo y datos de pago como responsable propio según su política de privacidad. Talonario no recibe tus datos de pago. Al activar la clave, tu navegador envía únicamente la clave a la plataforma de pago para comprobarla; nunca el contenido de tus facturas.</p>
+
+  <h2>Cookies</h2>
+  <p>Talonario no usa cookies ni herramientas de analítica ni publicidad. Usa el almacenamiento local del navegador solo para guardar lo que tú escribes y tu ajuste de Pro; es almacenamiento estrictamente necesario para el servicio que pides, por lo que no requiere consentimiento (artículo 22.2 de la LSSI).</p>
+
+  <h2>Tus derechos</h2>
+  <p>Como los datos están en tu dispositivo, tú mismo puedes verlos, cambiarlos o borrarlos desde la app o desde los ajustes del navegador. Para cualquier cuestión sobre los datos que trate el proveedor de alojamiento o la plataforma de pago, o para ejercer tus derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad, escribe a <span class="pendiente">[[CORREO DE CONTACTO]]</span>. También puedes reclamar ante la Agencia Española de Protección de Datos (<a href="https://www.aepd.es" rel="noopener">aepd.es</a>).</p>
+</main>
+<footer class="pie">Talonario · <a href="./">App</a> · <a href="aviso-legal.html">Aviso legal</a></footer>
+</body>
+</html>
