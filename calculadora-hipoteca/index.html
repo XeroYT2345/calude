@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Calculadora de hipoteca online gratis | CuotaClara</title>
+<meta name="description" content="Calcula la cuota mensual de tu hipoteca o préstamo, los intereses totales y la tabla de amortización. Compara dos escenarios. Gratis y privado.">
+<!-- TODO: sustituir por tu dominio real -->
+<link rel="canonical" href="https://TU-DOMINIO.com/">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Calculadora de hipoteca online gratis | CuotaClara">
+<meta property="og:description" content="Cuota mensual, intereses y tabla de amortización. Compara dos escenarios en segundos.">
+<!-- TODO: añadir og:image (1200x630) -->
+<!-- TODO: banner de cookies (CMP) del propietario al activar AdSense -->
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%230f766e%27/%3E%3Cpath d=%27M6 16l10-8 10 8v9H6z%27 fill=%27%23fff%27/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css?v=20261020">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"WebApplication","name":"CuotaClara - Calculadora de hipoteca","description":"Calcula la cuota mensual, los intereses totales y la tabla de amortización de una hipoteca o préstamo.","applicationCategory":"FinanceApplication","operatingSystem":"Any","inLanguage":"es","offers":{"@type":"Offer","price":"0","priceCurrency":"EUR"}}
+</script>
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Cómo se calcula la cuota de una hipoteca?","acceptedAnswer":{"@type":"Answer","text":"Con el sistema francés: cuota = capital × i / (1 − (1 + i)^−n), donde i es el tipo de interés mensual (el anual dividido entre 12) y n el número de cuotas."}},
+{"@type":"Question","name":"¿Qué es la tabla de amortización?","acceptedAnswer":{"@type":"Answer","text":"Es el desglose de cada cuota en intereses y capital amortizado, junto con el capital que te queda por pagar tras cada mes."}},
+{"@type":"Question","name":"¿Por qué al principio se pagan más intereses?","acceptedAnswer":{"@type":"Answer","text":"Los intereses se calculan sobre el capital pendiente, que es mayor al inicio. Como la cuota es constante, al principio una parte mayor va a intereses y, con el tiempo, más a capital."}},
+{"@type":"Question","name":"¿Sirve para tipo de interés variable?","acceptedAnswer":{"@type":"Answer","text":"Calcula con un tipo fijo. Para una hipoteca variable o mixta puedes simular distintos tipos con el comparador, pero el resultado real dependerá de las revisiones."}},
+{"@type":"Question","name":"¿Incluye comisiones, seguros o impuestos?","acceptedAnswer":{"@type":"Answer","text":"No. Solo calcula capital e intereses. Comisiones, seguros vinculados, tasación y gastos de formalización se suman aparte."}},
+{"@type":"Question","name":"¿Se guardan mis datos?","acceptedAnswer":{"@type":"Answer","text":"No. Todo el cálculo se hace en tu dispositivo y no se envía a ningún servidor."}}
+]}
+</script>
+</head>
+<body>
+<header class="site-header">
+  <a class="brand" href="./">Cuota<span>Clara</span></a>
+  <nav aria-label="Principal"><a href="#mas-herramientas">Más herramientas</a></nav>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>Calculadora de hipoteca</h1>
+    <p class="sub">Calcula tu cuota mensual, los intereses totales y la tabla de amortización. Compara dos escenarios.</p>
+  </section>
+
+  <section class="tool-card" id="tool" data-state="idle" aria-label="Calculadora">
+    <noscript><p class="notice">Esta herramienta necesita JavaScript para calcular.</p></noscript>
+
+    <div class="scenarios" id="scenarios">
+      <fieldset class="scenario" id="sc-a">
+        <legend>Escenario <span class="tag tag-a">A</span></legend>
+        <label>Importe del préstamo (€)
+          <input id="a-amount" type="number" inputmode="decimal" min="1" step="1000" value="150000">
+        </label>
+        <label>Interés anual (%)
+          <input id="a-rate" type="number" inputmode="decimal" min="0" max="30" step="0.05" value="3">
+        </label>
+        <label>Plazo (años)
+          <input id="a-years" type="number" inputmode="numeric" min="1" max="40" step="1" value="25">
+        </label>
+        <div class="result" id="res-a" aria-live="polite"></div>
+      </fieldset>
+
+      <fieldset class="scenario" id="sc-b" hidden>
+        <legend>Escenario <span class="tag tag-b">B</span></legend>
+        <label>Importe del préstamo (€)
+          <input id="b-amount" type="number" inputmode="decimal" min="1" step="1000" value="150000">
+        </label>
+        <label>Interés anual (%)
+          <input id="b-rate" type="number" inputmode="decimal" min="0" max="30" step="0.05" value="2.5">
+        </label>
+        <label>Plazo (años)
+          <input id="b-years" type="number" inputmode="numeric" min="1" max="40" step="1" value="30">
+        </label>
+        <div class="result" id="res-b" aria-live="polite"></div>
+      </fieldset>
+    </div>
+
+    <p class="error" id="error" role="alert" hidden></p>
+    <p class="delta" id="delta" aria-live="polite" hidden></p>
+
+    <div class="actions">
+      <button type="button" id="toggle-compare" class="btn btn-ghost" aria-pressed="false">+ Comparar con otro escenario</button>
+      <button type="button" id="print" class="btn btn-ghost">Imprimir tabla</button>
+    </div>
+
+    <p class="privacy">🔒 100 % privado: los datos se calculan en tu dispositivo y no se envían a ningún servidor. Resultado orientativo, no incluye comisiones ni seguros.</p>
+  </section>
+
+  <div class="ad-slot" aria-label="Publicidad"><!-- PEGA AQUÍ TU CÓDIGO DE ADSENSE -->Publicidad</div>
+
+  <section class="panel" id="grafico-panel">
+    <h2>Evolución de la deuda</h2>
+    <canvas id="chart" role="img" aria-label="Gráfico del capital pendiente y los intereses acumulados a lo largo del tiempo"></canvas>
+    <ul class="legend" id="legend"></ul>
+  </section>
+
+  <section class="panel" id="tabla-panel">
+    <div class="panel-head">
+      <h2>Tabla de amortización</h2>
+      <label class="inline" id="table-scenario-wrap" hidden>Escenario
+        <select id="table-scenario"><option value="a">A</option><option value="b">B</option></select>
+      </label>
+    </div>
+    <div class="table-wrap">
+      <table id="amort">
+        <thead><tr><th>Mes</th><th>Cuota</th><th>Intereses</th><th>Capital</th><th>Pendiente</th></tr></thead>
+        <tbody id="amort-body"></tbody>
+      </table>
+    </div>
+    <div class="table-more"><button type="button" id="more" class="btn btn-ghost">Mostrar 12 meses más</button> <button type="button" id="all" class="btn btn-ghost">Mostrar todos</button></div>
+  </section>
+
+  <section class="content">
+    <h2>Cómo funciona</h2>
+    <ol class="steps">
+      <li><strong>Indica el importe</strong> del préstamo, el interés anual y los años.</li>
+      <li><strong>Mira la cuota</strong> mensual, el total de intereses y lo que pagarás en total.</li>
+      <li><strong>Compara</strong> otro escenario para ver cuánto cambia si baja el tipo o se alarga el plazo.</li>
+    </ol>
+
+    <h2>Cómo se calcula la cuota de una hipoteca</h2>
+    <p>La calculadora usa el <em>sistema de amortización francés</em>, el más habitual en hipotecas y préstamos personales en España: la cuota mensual es constante durante toda la vida del préstamo. Se obtiene con la fórmula <code>cuota = capital × i / (1 − (1 + i)<sup>−n</sup>)</code>, donde <code>i</code> es el interés mensual (el anual dividido entre 12) y <code>n</code> el número total de cuotas.</p>
+    <p>Aunque la cuota no cambia, su composición sí: al principio la mayor parte son intereses, porque se calculan sobre un capital pendiente alto. Con el paso de los meses, cada cuota amortiza más capital y menos intereses. Por eso, devolver capital pronto o elegir un plazo más corto reduce el coste total de forma notable.</p>
+    <div class="ad-slot" aria-label="Publicidad"><!-- PEGA AQUÍ TU CÓDIGO DE ADSENSE (en contenido) -->Publicidad</div>
+    <h2>Plazo largo o plazo corto</h2>
+    <p>Alargar el plazo baja la cuota mensual, pero aumenta los intereses totales. Acortarlo sube la cuota y ahorra intereses. Usa el comparador: pon en el escenario A tu oferta actual y en el B una alternativa, y verás la diferencia de cuota y de coste total al instante.</p>
+    <p class="muted">Importante: es un cálculo aproximado con tipo fijo. No incluye comisiones, seguros vinculados, tasación, impuestos ni revisiones de un tipo variable. No constituye asesoramiento financiero.</p>
+
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Cómo se calcula la cuota de una hipoteca?</summary><p>Con el sistema francés: cuota = capital × i / (1 − (1 + i)<sup>−n</sup>), con i el interés mensual y n el número de cuotas.</p></details>
+    <details><summary>¿Qué es la tabla de amortización?</summary><p>Es el desglose de cada cuota en intereses y capital amortizado, junto con el capital que queda por pagar tras cada mes.</p></details>
+    <details><summary>¿Por qué al principio se pagan más intereses?</summary><p>Porque los intereses se calculan sobre el capital pendiente, que es mayor al inicio. Como la cuota es constante, al principio una parte mayor va a intereses y, con el tiempo, más a capital.</p></details>
+    <details><summary>¿Sirve para tipo de interés variable?</summary><p>Calcula con un tipo fijo. Para una hipoteca variable o mixta puedes simular distintos tipos con el comparador, pero el resultado real dependerá de las revisiones.</p></details>
+    <details><summary>¿Incluye comisiones, seguros o impuestos?</summary><p>No. Solo calcula capital e intereses. Comisiones, seguros vinculados, tasación y gastos de formalización se suman aparte.</p></details>
+    <details><summary>¿Se guardan mis datos?</summary><p>No. Todo el cálculo se hace en tu dispositivo y no se envía a ningún servidor.</p></details>
+
+    <h2 id="mas-herramientas">Más herramientas</h2>
+    <!-- TODO: enlazar a otras herramientas cuando existan (calculadora de sueldo neto, conversor de unidades…) -->
+    <p class="muted">Próximamente: calculadora de sueldo neto, contador de días y más.</p>
+  </section>
+</main>
+
+<footer class="site-footer">
+  <p>© <span id="year">2026</span> CuotaClara · <a href="privacidad.html">Privacidad</a> · <a href="aviso-legal.html">Aviso legal</a></p>
+</footer>
+
+<script defer src="lib/manifest.js?v=20261020"></script>
+<script defer src="lib/calc.js?v=20261020"></script>
+<script defer src="main.js?v=20261020"></script>
+</body>
+</html>
