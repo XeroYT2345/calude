@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>AniRadar · promo con grabación real</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script src="clips/index.js"></script>
+<script src="engine.js"></script>
+<script>
+/* Anuncio de AniRadar con la grabación de pantalla REAL dentro del móvil (búsquedas de verdad con portadas reales):
+   intro de marca → móvil fijo mientras cambian los títulos y los fragmentos → final de marca.
+   Los fragmentos salen de clips.json (node tiktok/clips.mjs grabacion.mp4). */
+
+// 1 · Presentación
+{
+  const a = 0, kt = KT('Conoce *AniRadar*|el radar que encuentra|*cualquier anime*', { start: 0.6, stagger: 0.11, size: 84 });
+  ev(a + 0.1, 'boom', 0.6); ktEvents(a, kt); ev(a + 2.5, 'boing');
+  scene(a, 4.0, (lt) => {
+    for (let i = 0; i < 3; i++) { const ph = ((lt - 0.5 + i * 0.6) % 1.8) / 1.8; if (lt > 0.5) { K.save(); K.strokeStyle = `rgba(255,85,0,${(1 - ph) * 0.35})`; K.lineWidth = 6; K.beginPath(); K.arc(540, 700, 170 + ph * 260, 0, 7); K.stroke(); K.restore(); } }
+    const p = P(lt, 0.05, 0.75), s = eb(p);
+    if (p > 0) { K.save(); K.translate(540, 700); K.scale(s, s); K.rotate((1 - eo(p)) * -0.5); K.translate(-540, -700); appIcon(540, 700, 300, lt); K.restore(); }
+    SEED = 21; for (let i = 0; i < 7; i++) { const ang = rnd() * 7, rad = 230 + rnd() * 90, tw = Math.abs(Math.sin(lt * 3 + i)); if (lt > 0.6) iSpark(540 + Math.cos(ang) * rad, 700 + Math.sin(ang) * rad, 26 + tw * 22, `rgba(255,138,61,${0.4 + tw * 0.6})`); }
+    drawKT(kt, 540, 1110, lt);
+    const q = P(lt, 2.4, 2.9); if (q > 0) pop(880, 1400, q, () => radi(880, 1400, 0.9, lt, { wave: true, look: -1 }));
+  });
+}
+
+// 2 · La app de verdad: el móvil se queda y van cambiando el título y el fragmento de la grabación
+{
+  const A = 4.0, d = clipDur;
+  const segs = [];
+  const add = (o) => { const start = segs.length ? segs[segs.length - 1].end : 0; segs.push({ ...o, start, end: start + o.len, kt: KT(o.head, { start: 0.05, size: 88 }) }); };
+  add({ head: 'Busca cualquier anime|por su *nombre*', clips: [['db1', 0.3], ['db2', 0.3 + d('db1')]], len: 0.3 + d('db1') + d('db2') + 0.35 });
+  add({ head: 'Te lo sugiere|mientras *escribes*', clips: [['naru', 0.15]], len: 0.15 + d('naru') + 0.3 });
+  add({ head: 'Y *dónde verlo*|legal en tu país', clips: [['where', 0.15]], len: 0.15 + d('where') + 0.3 });
+  add({ head: 'Personajes, orden|y *fotogramas*', clips: [['extras', 0.15]], len: 0.15 + d('extras') + 0.2 });
+  add({ head: 'Calendario de|*estrenos* en tu hora', clips: [['cal', 0.15]], len: 0.15 + d('cal') + 0.3 });
+  add({ head: 'Y lo más *visto*|ahora mismo', clips: [['trend', 0.15]], len: 0.15 + d('trend') + 0.45 });
+  const [S0, S1, S2, S3, S4, S5] = segs, B = A + S5.end;
+  const src = (seg, clip, s, speed) => seg.start + seg.clips.find((c) => c[0] === clip)[1] + s / speed; // segundo de la grabación → tiempo de la escena
+
+  // Efectos de sonido sincronizados con la grabación
+  segs.forEach((s, i) => { if (i) ev(A + s.start, 'whoosh', 0.55); ktEvents(A + s.start, s.kt); });
+  ev(A + 0.15, 'whoosh', 0.7);
+  for (let t = 0.4; t < 0.3 + d('db1') - 0.1; t += 0.085) ev(A + t, 'key', 0.6);
+  const tFound = src(S0, 'db2', 70.0 - 68.4, 1.2);
+  ev(A + S0.clips[1][1], 'tap'); ev(A + tFound, 'ding'); ev(A + tFound + 0.05, 'confetti', 0.5); ev(A + tFound + 0.5, 'boing');
+  for (let t = S1.start + 0.2; t < src(S1, 'naru', 1.6, 1.6); t += 0.1) ev(A + t, 'key', 0.6);
+  ev(A + S1.start + 1.6, 'pop', 0.6); ev(A + src(S1, 'naru', 5.5, 1.6), 'tap'); ev(A + src(S1, 'naru', 7.5, 1.6), 'ding', 0.8);
+  ev(A + S2.start + 1.6, 'ding'); ev(A + src(S2, 'where', 6.0, 1.4), 'tap');
+  [0.8, 1.9, 3.0].forEach((x) => ev(A + S3.start + x, 'pop', 0.7));
+  ev(A + S4.start + 1.4, 'bell'); ev(A + S5.start + 1.0, 'pop', 0.6);
+  ev(A + src(S5, 'trend', 6.8, 2.0), 'tap'); ev(A + src(S5, 'trend', 8.5, 2.0), 'ding', 0.8); ev(A + src(S5, 'trend', 8.5, 2.0) + 0.4, 'boing');
+
+  const PW = 600, SW = PW - 32, SH = SW * 744 / 384, PH = SH + 32, TOP = 470;
+  function floatChip(x, y, w, p, draw) { rise(p, () => { card(x, y, w, 112, 32); draw(x, y); }, 40); }
+
+  scene(A, B, (lt) => {
+    const si = segs.findIndex((s) => lt < s.end), seg = segs[si < 0 ? segs.length - 1 : si], rt = lt - seg.start;
+    // Título del tramo (sale con desenfoque al final del tramo)
+    K.save(); const outP = si < segs.length - 1 ? P(rt, seg.len - 0.25, seg.len) : 0; K.globalAlpha *= 1 - outP; if (outP > 0) K.filter = `blur(${outP * 14}px)`;
+    drawKT(seg.kt, 540, 300, rt); K.restore();
+
+    // Móvil con la grabación
+    let cur = seg.clips[0]; seg.clips.forEach((c) => { if (rt >= c[1]) cur = c; });
+    const enter = eo(P(lt, 0.1, 0.8)), bump = seg.start > 0 ? 0.965 + 0.035 * eb(P(rt, 0, 0.35)) : 1;
+    let zoom = 1; if (seg === S2) zoom = 1 + 0.26 * eio(P(rt, 0.6, 1.4)) * (1 - eio(P(rt, seg.len - 0.8, seg.len - 0.2)));
+    K.save();
+    K.translate(540, TOP + (1 - enter) * 1100); K.scale(bump * zoom, bump * zoom); K.rotate(Math.sin(lt * 0.9) * 0.012); K.translate(-540, -TOP);
+    phone(540, TOP, PW, PH, lt, (sx, sy, sw, sh) => {
+      const im = clipImg(cur[0], Math.max(0, rt - cur[1])); if (im) { K.imageSmoothingQuality = 'high'; K.drawImage(im, sx, sy, sw, sh); }
+      const fl = 1 - P(rt, 0, 0.18); if (seg.start > 0 && fl > 0) { K.fillStyle = `rgba(255,255,255,${fl * 0.55})`; K.fillRect(sx, sy, sw, sh); }
+    }, { island: false });
+    if (seg === S0) ripple(540, TOP + 16 + SH * 0.344, rt, S0.clips[1][1], 'rgba(255,255,255,.7)');
+    K.restore();
+
+    // Detalles flotantes de cada tramo
+    if (seg === S0) {
+      const fp = P(rt, tFound, tFound + 0.45);
+      floatChip(600, 760, 420, fp, (x, y) => { okBadge(x + 58, y + 56, 56); txt('¡Encontrado!', x + 104, y + 52, { size: 40, w: 900 }); txt('con su ficha oficial', x + 104, y + 88, { size: 28, w: 600, c: MUT }); });
+      confetti(820, 800, rt - tFound - 0.05, 50, 4, 0.55);
+      const mp = P(rt, tFound + 0.5, tFound + 1.0); if (mp > 0) pop(170, 1400, mp, () => radi(170, 1400, 0.62, lt, { look: 1, wave: true }));
+    }
+    if (seg === S1) {
+      floatChip(40, 930, 400, P(rt, 1.6, 2.05), (x, y) => { iSpark(x + 56, y + 56, 52); txt('Con portada', x + 100, y + 52, { size: 38, w: 900 }); txt('y nota media', x + 100, y + 88, { size: 28, w: 600, c: MUT }); });
+      const ts = src(S1, 'naru', 7.5, 1.6) - S1.start;
+      floatChip(640, 1180, 390, P(rt, ts, ts + 0.45), (x, y) => { okBadge(x + 58, y + 56, 56); txt('Ficha oficial', x + 104, y + 52, { size: 38, w: 900 }); txt('de AniList', x + 104, y + 88, { size: 28, w: 600, c: MUT }); });
+    }
+    if (seg === S2) {
+      pop(540, 1460, P(rt, 1.6, 2.1), () => { K.save(); K.shadowColor = 'rgba(20,22,43,.2)'; K.shadowBlur = 40; K.shadowOffsetY = 14; rr(220, 1410, 640, 100, 50, '#fff'); K.restore(); okBadge(282, 1460, 56); txt('Verificado en España', 325, 1474, { size: 40, w: 900, c: OK }); });
+    }
+    if (seg === S3) {
+      [['Orden de visionado', 40, 760, 0.8], ['Personajes', 650, 1040, 1.9], ['Fotogramas oficiales', 40, 1320, 3.0]].forEach(([l, x, y, at]) => {
+        font(38, 800); const w = K.measureText(l).width + 130;
+        floatChip(x === 650 ? 1040 - w : x, y, w, P(rt, at, at + 0.45), (cx, cy) => { iCheck(cx + 52, cy + 56, 40, ACC, 8); txt(l, cx + 90, cy + 70, { size: 38, w: 800 }); });
+      });
+    }
+    if (seg === S4) {
+      rise(P(rt, 1.4, 1.85), () => {
+        card(170, 1360, 740, 140, 40); K.save(); K.fillStyle = 'rgba(255,85,0,.12)'; K.beginPath(); K.arc(250, 1430, 46, 0, 7); K.fill(); K.restore();
+        iBell(250, 1425, 48, Math.sin(lt * 24) * 0.3 * (1 - P(rt, 1.5, 2.3)));
+        txt('Te avisa antes', 320, 1420, { size: 42, w: 900 }); txt('Recordatorio 10 min antes', 320, 1466, { size: 30, w: 600, c: MUT });
+      }, -50);
+    }
+    if (seg === S5) {
+      floatChip(640, 760, 390, P(rt, 1.0, 1.45), (x, y) => { K.fillStyle = '#FBBF24'; iSpark(x + 56, y + 56, 54, '#F59E0B'); txt('Tendencias', x + 100, y + 52, { size: 38, w: 900 }); txt('y mejor valorados', x + 100, y + 88, { size: 28, w: 600, c: MUT }); });
+      const ts = src(S5, 'trend', 8.5, 2.0) - S5.start, mp = P(rt, ts + 0.4, ts + 0.9);
+      if (mp > 0) pop(915, 1410, mp, () => radi(915, 1410, 0.6, lt, { look: -1, wave: true, seed: 2 }));
+    }
+  });
+
+  // 3 · Final de marca
+  const a = B, kt = KT('Encuentra cualquier anime.|Y dónde verlo.', { start: 1.1, size: 64, c: '#fff', ac: '#fff' });
+  ev(a, 'whoosh', 1); ev(a + 0.35, 'boom', 1); ev(a + 0.45, 'confetti', 1); ktEvents(a, kt); ev(a + 2.0, 'boing'); ev(a + 2.4, 'ding', 0.9); ev(a + 2.9, 'sparkle');
+  scene(a, a + 6.0, (lt) => {
+    const rad = eio(P(lt, 0, 0.6)) * 1500;
+    K.save(); K.beginPath(); K.arc(540, 820, rad, 0, 7); K.clip();
+    const g = K.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#FF7A2E'); g.addColorStop(0.6, '#F04E0C'); g.addColorStop(1, '#B8310A'); K.fillStyle = g; K.fillRect(0, 0, W, H);
+    K.save(); K.translate(540, 760); K.rotate(lt * 0.12); for (let i = 0; i < 16; i++) { K.rotate(Math.PI / 8); K.fillStyle = i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,0)'; K.beginPath(); K.moveTo(0, 0); K.lineTo(-150, -1500); K.lineTo(150, -1500); K.closePath(); K.fill(); } K.restore();
+    const gl = K.createRadialGradient(540, 760, 0, 540, 760, 700); gl.addColorStop(0, 'rgba(255,220,170,.45)'); gl.addColorStop(1, 'rgba(255,220,170,0)'); K.fillStyle = gl; K.fillRect(0, 0, W, H);
+    const ip = P(lt, 0.3, 0.9), s = eb(ip);
+    if (ip > 0) { K.save(); K.translate(540, 720); K.scale(s, s); K.translate(-540, -720); appIcon(540, 720, 300, lt, true); K.restore(); }
+    confetti(540, 720, lt - 0.45, 130, 9, 1);
+    pop(540, 980, P(lt, 0.7, 1.2), () => { rich([['Ani', '#fff'], ['Radar', '#FFE2C7']], 540, 1020, 150); });
+    drawKT(kt, 540, 1170, lt);
+    pop(540, 1340, P(lt, 2.4, 2.9), () => {
+      K.save(); K.shadowColor = 'rgba(0,0,0,.25)'; K.shadowBlur = 40; K.shadowOffsetY = 14; rr(200, 1290, 680, 110, 55, '#fff'); K.restore();
+      txt('Gratis · aniradar.net', 540, 1362, { size: 48, w: 900, c: ACC, align: 'center' });
+      const sh = P(lt, 2.9, 3.6); if (sh > 0 && sh < 1) { K.save(); K.beginPath(); K.roundRect(200, 1290, 680, 110, 55); K.clip(); const sx = 120 + sh * 900; const lg = K.createLinearGradient(sx - 80, 0, sx + 80, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, 'rgba(255,200,150,.6)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); K.fillStyle = lg; K.fillRect(200, 1290, 680, 110); K.restore(); }
+    });
+    txt('Por nombre, trama o captura · Sin registro', 540, 1470, { size: 32, w: 700, c: 'rgba(255,255,255,.85)', align: 'center', a: P(lt, 3.0, 3.5) });
+    const mp = P(lt, 2.0, 2.5); if (mp > 0) pop(860, 540, mp, () => radi(860, 540, 0.62, lt, { look: -1, wave: true, seed: 3 }));
+    K.restore();
+  }, { overlay: true });
+}
+finalize();
+</script></body></html>

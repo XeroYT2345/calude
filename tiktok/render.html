@@ -80,6 +80,33 @@ function fakePoster(x, y, w, h, hue, t = 0) {
   X.fillStyle = 'rgba(0,0,0,.28)'; X.beginPath(); X.moveTo(x, y + h); X.lineTo(x, y + h * 0.65); X.quadraticCurveTo(x + w * 0.4, y + h * 0.45, x + w, y + h * 0.7); X.lineTo(x + w, y + h); X.fill();
   X.restore();
 }
+// Animes reales que salen en los vídeos. Sin carátula se dibuja un póster tipográfico con el título (uso de nombres: sin riesgo de copyright).
+// Con «node render.mjs --covers» se cargan las carátulas oficiales de AniList en window.COVERS (ver aviso en GUIA.md).
+const ANIME = {
+  bleach: { id: 116674, t: 'Bleach: Thousand-Year Blood War', s: 'BLEACH', sub: 'Pierrot · 2022', hue: 18, ep: 13, key: 'bleach' },
+  frieren: { id: 154587, t: 'Frieren', s: 'FRIEREN', hue: 150, ep: 28, key: 'frieren' },
+  csm: { id: 127230, t: 'Chainsaw Man', s: 'CHAINSAW MAN', hue: 0, ep: 12, key: 'chainsaw' },
+  dandadan: { id: 171018, t: 'Dandadan', s: 'DANDADAN', hue: 300, ep: 12, key: 'dandadan' },
+  solo: { id: 151807, t: 'Solo Leveling', s: 'SOLO LEVELING', hue: 220, ep: 12, key: 'solo' },
+  edge: { id: 120377, t: 'Cyberpunk: Edgerunners', s: 'EDGE RUNNERS', hue: 55, ep: 10, key: 'edgerunners' },
+  mob: { id: 21507, t: 'Mob Psycho 100', s: 'MOB PSYCHO 100', hue: 270, ep: 12, key: 'mob' }
+};
+window.ANIME = ANIME;
+window.COVERS = {};
+function poster(x, y, w, h, a) {
+  const r = Math.min(w, h) * 0.1, img = COVERS[a.id];
+  X.save(); X.beginPath(); X.roundRect(x, y, w, h, r); X.clip();
+  if (img) {
+    const s = Math.max(w / img.width, h / img.height);
+    X.drawImage(img, x + (w - img.width * s) / 2, y + (h - img.height * s) / 2, img.width * s, img.height * s);
+  } else {
+    X.restore(); fakePoster(x, y, w, h, a.hue); X.save(); X.beginPath(); X.roundRect(x, y, w, h, r); X.clip();
+    const size = Math.max(18, Math.min(w * 0.16, 58)), lines = wrap(a.s, w * 0.86, size, 900), bh = lines.length * size * 1.08 + size * 0.9;
+    X.fillStyle = 'rgba(0,0,0,.42)'; X.fillRect(x, y + h - bh, w, bh);
+    lines.forEach((l, i) => txt(l, x + w / 2, y + h - size * 0.6 - (lines.length - 1 - i) * size * 1.08, { size, w: 900 }));
+  }
+  X.restore();
+}
 function chip(x, y, label, o = {}) {
   font(o.size || 38, 700); const w = X.measureText(label).width + (o.pad || 30) * 2, h = o.h || 84;
   rr(x, y, w, h, h * 0.32, o.on ? 'rgba(255,85,0,.25)' : PANEL2, o.on ? ACC : LINE, o.on ? 4 : 2);
@@ -127,13 +154,13 @@ function v1(t) {
     const p = eo(P(lt, 3.0, 3.6));
     if (p > 0) {
       X.save(); X.globalAlpha *= p; X.translate(0, (1 - p) * 80);
-      rr(90, 910, 900, 420, 34, PANEL, 'rgba(52,211,153,.5)', 3);
-      fakePoster(130, 950, 230, 340, 18);
-      rr(400, 960, 300, 56, 16, 'rgba(52,211,153,.18)'); check(432, 988, 30); txt('IDENTIFICADO', 460, 1000, { size: 30, w: 800, c: OK, align: 'left' });
-      rr(400, 1050, 520, 40, 12, 'rgba(255,255,255,.85)'); rr(400, 1106, 360, 30, 10, 'rgba(255,255,255,.3)');
-      txt('★ 8.9', 400, 1190, { size: 40, w: 800, c: GOLD, align: 'left' });
-      txt('Dónde verlo en tu país:', 400, 1250, { size: 32, w: 600, c: MUT, align: 'left' });
-      chip(400, 1270, '2 plataformas ✓', { size: 30, h: 58, pad: 22, on: true });
+      rr(90, 910, 900, 430, 34, PANEL, 'rgba(52,211,153,.5)', 3);
+      poster(130, 950, 240, 350, ANIME.bleach);
+      rr(405, 955, 300, 56, 16, 'rgba(52,211,153,.18)'); check(437, 983, 30); txt('IDENTIFICADO', 465, 995, { size: 30, w: 800, c: OK, align: 'left' });
+      wrap(ANIME.bleach.t, 545, 40, 900).forEach((l, i) => txt(l, 405, 1080 + i * 48, { size: 40, w: 900, align: 'left' }));
+      txt(ANIME.bleach.sub, 405, 1180, { size: 32, w: 600, c: MUT, align: 'left' });
+      txt('Dónde verlo en tu país:', 405, 1240, { size: 32, w: 600, c: '#e4e4e7', align: 'left' });
+      chip(405, 1262, 'Disponible ✓', { size: 30, h: 58, pad: 22, on: true });
       X.restore();
     }
   });
@@ -151,9 +178,11 @@ function v1(t) {
     const p = eb(P(lt, 2.2, 2.7));
     if (p > 0) {
       X.save(); X.globalAlpha *= cl(p); X.translate(540, 1200); X.scale(p, p);
-      rr(-400, -70, 800, 190, 30, PANEL, ACC, 4);
-      txt('Episodio 7 · minuto 12:40', 0, 0, { size: 50, w: 900 });
-      txt('98 % de similitud', 0, 80, { size: 40, w: 700, c: OK });
+      rr(-420, -90, 840, 270, 30, PANEL, ACC, 4);
+      poster(-390, -60, 140, 210, ANIME.frieren);
+      txt('Frieren', -220, -5, { size: 58, w: 900, align: 'left' });
+      txt('Episodio 7 · minuto 12:40', -220, 60, { size: 40, w: 700, align: 'left', c: '#e4e4e7' });
+      txt('98 % de similitud', -220, 120, { size: 36, w: 700, c: OK, align: 'left' });
       X.restore();
     }
   });
@@ -175,7 +204,7 @@ function v1(t) {
 const Q = [
   { q: '1 · ¿Qué te apetece sentir?', o: ['Acción', 'Reírme', 'Emocionarme', 'Misterio', 'Aventura', 'Romance', 'Terror', 'Deportes'], pick: 0 },
   { q: '2 · ¿Cuánto tiempo tienes?', o: ['Una película', 'Serie corta', 'Media', 'Larga'], pick: 1 },
-  { q: '3 · ¿Qué prefieres?', o: ['Lo que todos ven', 'Una joya oculta'], pick: 1 }
+  { q: '3 · ¿Qué prefieres?', o: ['Lo que todos ven', 'Una joya oculta'], pick: 0 }
 ];
 function v2(t) {
   bg(t); brandTop(t);

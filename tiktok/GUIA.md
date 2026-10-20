@@ -1,6 +1,18 @@
 # Vídeos de TikTok para AniRadar
 
-Tres vídeos verticales (1080×1920, 30 fps, ~17 s) en `tiktok/out/`, con su portada:
+## Los anuncios principales (estilo «app promo»)
+
+| Vídeo | Qué es | Archivo |
+|---|---|---|
+| **Con tu grabación real** ⭐ | Intro de marca → tu móvil usando AniRadar de verdad (Dragon Ball, Naruto, dónde verlo en España, personajes, calendario, tendencias, Chainsaw Man) con títulos animados, tarjetas flotantes y la mascota → final de marca. ~44 s | `aniradar-real.mp4` |
+| Animado | Lo mismo pero 100 % dibujado (sin imágenes de anime). ~43 s | `aniradar-promo.mp4` |
+
+Cada uno tiene una versión **`-sin-musica.mp4`** con solo los efectos de sonido, para que pongas encima un sonido de TikTok.
+La música y los efectos están generados por código (`audio.py`): son originales, no hay riesgo de reclamación.
+
+**Sobre las portadas que salen en la grabación real:** son las carátulas oficiales que muestra tu web. Es lo que hacen casi todas las cuentas de anime y TikTok rara vez lo detecta solo, pero el dueño de los derechos puede denunciar un vídeo y retirarlo. Lo que de verdad hace saltar el sistema son **clips de episodios y canciones**: no los añadas.
+
+## Vídeos cortos (~17 s, 100 % gráficos)
 
 | Vídeo | Qué promociona | Archivo |
 |---|---|---|
@@ -8,11 +20,9 @@ Tres vídeos verticales (1080×1920, 30 fps, ~17 s) en `tiktok/out/`, con su por
 | ¿No sabes qué anime ver hoy? | El test `que-anime-ver.html` | `que-anime-ver.mp4` |
 | ¿A qué hora sale el próximo episodio en TU país? | Calendario, recordatorios y dónde verlo legal | `calendario.mp4` |
 
-Están hechos **solo con gráficos y texto originales**: no aparecen clips, carátulas, personajes ni música de ningún anime. Es la causa nº 1 de vídeos silenciados, retirados y cuentas penalizadas.
-
 ## Antes de publicar: reglas para que no te bloqueen
 
-1. **Música: solo desde TikTok y, si puedes, de la biblioteca de música comercial.** Los vídeos llevan audio en silencio a propósito. Al subirlos, añade un sonido desde TikTok. Si tu cuenta es de empresa, solo podrás elegir de la *Commercial Music Library*, que es la opción segura para contenido promocional. **Nunca** metas openings de anime ni canciones descargadas.
+1. **Música: la nuestra o una de TikTok.** Los anuncios principales ya llevan música original. Si prefieres un sonido de moda, usa la versión `-sin-musica` y añádelo desde TikTok; los vídeos cortos van en silencio a propósito. Si tu cuenta es de empresa, solo podrás elegir de la *Commercial Music Library*, que es la opción segura para contenido promocional. **Nunca** metas openings de anime ni canciones descargadas.
 2. **Marca el contenido como promocional.** En «Más opciones → Divulgación de contenido» activa **«Tu marca»**, porque estás promocionando tu propia web. No es obligatorio en todos los casos, pero evita problemas con la política de contenido comercial.
 3. **El enlace va en el perfil, no en el vídeo.** Pon `aniradar.net` en la biografía. TikTok solo deja poner enlace clicable a algunas cuentas (empresa o con suficientes seguidores, según el país). Mientras tanto basta con el texto «aniradar.net» en la bio, que ya aparece en el vídeo.
 4. **No pidas interacción a cambio de nada.** Evita «dale like si…», «comenta 1 y te lo paso» o «sígueme para la parte 2» sin parte 2: TikTok lo trata como *engagement bait* y te baja el alcance.
@@ -22,6 +32,11 @@ Están hechos **solo con gráficos y texto originales**: no aparecen clips, car�
 8. **No digas nada que no sea verdad.** Todo lo que dicen los vídeos lo hace tu web: es gratis, no pide registro, tiene 20 países y 6 idiomas y el recordatorio avisa 10 minutos antes. Mantenlo así si cambias textos.
 
 ## Textos para publicar (copiar y pegar)
+
+**aniradar-real.mp4 / aniradar-promo.mp4**
+> Buscas un anime por su nombre (o por lo que recuerdas de la trama) y AniRadar te dice cuál es, dónde verlo LEGAL en tu país, el orden de las temporadas y cuándo sale el próximo episodio. Gratis y sin registro → aniradar.net (enlace en el perfil)
+>
+> #anime #animeespañol #animetok #otaku #dondeveranime
 
 **identifica.mp4**
 > ¿Te ha pasado? Ves un trozo de anime en un vídeo y no hay forma de saber cuál es 😩 Con AniRadar lo describes con tus palabras o subes una captura y te dice el anime, el episodio y dónde verlo legal en tu país. Gratis y sin registro → aniradar.net (enlace en el perfil)
@@ -47,12 +62,20 @@ Están hechos **solo con gráficos y texto originales**: no aparecen clips, car�
 
 ## Volver a generarlos o hacer más
 
-Los vídeos se dibujan en `render.html` (canvas) y se graban con `render.mjs` (Playwright + ffmpeg):
+Todo se dibuja con código (canvas) y se graba con Playwright + ffmpeg; el audio sale de `audio.py` (numpy).
 
 ```bash
-npm i playwright && npx playwright install chromium   # solo la primera vez
-node tiktok/render.mjs              # vídeos en tiktok/out/
-node tiktok/render.mjs --stills     # solo fotogramas sueltos, para revisar el diseño
+npm i playwright && npx playwright install chromium   # solo la primera vez (y pip install numpy)
+
+# Anuncio con tu grabación real: 1) extrae los fragmentos de clips.json  2) renderiza
+node tiktok/clips.mjs ruta/a/tu-grabacion.mp4
+node tiktok/promo.mjs --page promo-real.html --name aniradar-real
+
+node tiktok/promo.mjs                       # anuncio animado (promo.html)
+node tiktok/render.mjs                      # los 3 vídeos cortos (render.html)
+node tiktok/promo.mjs --page promo-real.html --stills   # solo fotogramas sueltos para revisar
 ```
 
-Para cambiar textos, edita las funciones `v1`, `v2` y `v3` de `render.html`.
+- **Con otra grabación:** cambia en `clips.json` los segundos `in`/`out` de cada fragmento (y `speed` para acelerarlo).
+- **Textos:** los títulos de cada tramo están en `promo-real.html` (`add({ head: … })`). Usa `*palabra*` para ponerla en naranja y `|` para el salto de línea.
+- `engine.js` tiene lo común: mascota, móvil, tarjetas, tipografía animada y transiciones.

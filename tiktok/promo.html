@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>AniRadar · promo</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script src="engine.js"></script>
+<script>
+/* Anuncio vertical de AniRadar (1080×1920, ~43 s) estilo «app promo»: tipografía cinética, mockup del móvil, tarjetas
+   flotantes, mascota original (Radi) y final de marca. Todo se dibuja aquí: sin imágenes, clips ni música de terceros.
+   window.frame(t) dibuja el instante t; window.EVENTS lista los efectos de sonido para audio.py. */
+// 1 · Presentación
+{
+  const a = 0, kt = KT('Conoce *AniRadar*|el radar que encuentra|*cualquier anime*', { start: 0.6, stagger: 0.11, size: 84 });
+  ev(a + 0.1, 'boom', 0.6); ktEvents(a, kt); ev(a + 2.5, 'boing');
+  scene(a, 4.4, (lt) => {
+    for (let i = 0; i < 3; i++) { const ph = ((lt - 0.5 + i * 0.6) % 1.8) / 1.8; if (lt > 0.5) { K.save(); K.strokeStyle = `rgba(255,85,0,${(1 - ph) * 0.35})`; K.lineWidth = 6; K.beginPath(); K.arc(540, 700, 170 + ph * 260, 0, 7); K.stroke(); K.restore(); } }
+    const p = P(lt, 0.05, 0.75), s = eb(p);
+    if (p > 0) { K.save(); K.translate(540, 700); K.scale(s, s); K.rotate((1 - eo(p)) * -0.5); K.translate(-540, -700); appIcon(540, 700, 300, lt); K.restore(); }
+    SEED = 21; for (let i = 0; i < 7; i++) { const ang = rnd() * 7, rad = 230 + rnd() * 90, tw = Math.abs(Math.sin(lt * 3 + i)); if (lt > 0.6) iSpark(540 + Math.cos(ang) * rad, 700 + Math.sin(ang) * rad, 26 + tw * 22, `rgba(255,138,61,${0.4 + tw * 0.6})`); }
+    drawKT(kt, 540, 1110, lt);
+    const q = P(lt, 2.4, 2.9); if (q > 0) pop(880, 1400, q, () => radi(880, 1400, 0.9, lt, { wave: true, look: -1 }));
+  });
+}
+
+// 2 · Buscar por descripción
+{
+  const a = 4.4, kt = KT('¿No recuerdas|el *nombre?*', { start: 0.15 }), q = 'chico que ve fantasmas y tiene una espada gigante';
+  ktEvents(a, kt); ev(a + 0.3, 'whoosh', 0.7); ev(a + 1.0, 'pop', 0.5);
+  for (let i = 0; i < q.length; i++) if (q[i] !== ' ') ev(a + 1.5 + i * 0.042, 'key', 0.5 + 0.5 * ((i * 7) % 3) / 2);
+  ev(a + 3.85, 'tap'); ev(a + 4.0, 'scan'); ev(a + 5.0, 'ding'); ev(a + 5.05, 'confetti', 0.6); ev(a + 5.5, 'boing');
+  scene(a, 11.8, (lt) => {
+    drawKT(kt, 540, 360, lt);
+    pill(540, 500, 'Escribe lo que recuerdas', iSearch, P(lt, 0.9, 1.4));
+    const top = 650 + (1 - eo(P(lt, 0.25, 1.0))) * 900 + Math.sin(lt * 1.6) * 6;
+    phone(540, top, 580, 1160, lt, (sx, sy, sw, sh) => {
+      phoneHeader(sx, sy, sw, lt);
+      txt('¿Qué anime es?', sx + 40, sy + 240, { size: 46, w: 900, c: '#fff' });
+      txt('Descríbelo con tus palabras', sx + 40, sy + 290, { size: 28, w: 600, c: '#A1A1AA' });
+      const typing = lt > 1.4 && lt < 4.0;
+      rr(sx + 30, sy + 330, sw - 60, 300, 30, '#171923', typing ? ACC : 'rgba(255,255,255,.12)', 4);
+      const n = Math.floor(q.length * P(lt, 1.5, 1.5 + q.length * 0.042)), lines = wrap(q.slice(0, n) || ' ', sw - 130, 36, 600);
+      iSearch(sx + 78, sy + 388, 40);
+      lines.forEach((l, i) => txt(l, sx + 112, sy + 402 + i * 48, { size: 36, w: 600, c: '#F4F4F5' }));
+      if (lt > 1.2 && lt < 3.9 && Math.floor(lt * 2.6) % 2 === 0) { font(36, 600); const lw = K.measureText(lines[lines.length - 1]).width; rr(sx + 116 + lw, sy + 370 + (lines.length - 1) * 48, 4, 42, 2, ACC); }
+      const bp = lt > 3.75 && lt < 3.95 ? 0.95 : 1; K.save(); K.translate(sx + sw / 2, sy + 570); K.scale(bp, bp); rr(-(sw - 120) / 2, -38, sw - 120, 76, 24, ACC); txt('Identificar', 0, 14, { size: 36, w: 800, c: '#fff', align: 'center' }); K.restore();
+      ripple(sx + sw / 2, sy + 570, lt, 3.85, 'rgba(255,255,255,.6)');
+      const sp = P(lt, 3.95, 4.3) * (1 - P(lt, 4.9, 5.2));
+      if (sp > 0) {
+        K.save(); K.globalAlpha *= sp; K.translate(sx + sw / 2, sy + 830); radarMarks(150, lt * 1.6); K.restore();
+        SEED = 5; for (let i = 0; i < 6; i++) { const at = 4.05 + i * 0.12, ang = rnd() * 7, d = 40 + rnd() * 100; const bpp = P(lt, at, at + 0.2); if (bpp > 0) { K.save(); K.globalAlpha *= sp * (1 - P(lt, at + 0.4, at + 0.9)); K.fillStyle = '#34D399'; K.beginPath(); K.arc(sx + sw / 2 + Math.cos(ang) * d, sy + 830 + Math.sin(ang) * d, 9 * eb(bpp), 0, 7); K.fill(); K.restore(); } }
+        txt('Buscando…', sx + sw / 2, sy + 1030, { size: 32, w: 700, c: '#E4E4E7', align: 'center', a: sp });
+      }
+    });
+    const rp = P(lt, 5.0, 5.55);
+    pop(540, 1330, rp, () => {
+      card(100, 1150, 880, 370, 42);
+      poster(140, 1185, 200, 300, ANIME.bleach);
+      rr(372, 1192, 290, 56, 28, OKBG); iCheck(406, 1220, 28, OK, 6); txt('IDENTIFICADO', 430, 1232, { size: 28, w: 800, c: OK });
+      wrap(ANIME.bleach.t, 560, 46, 900).forEach((l, i) => txt(l, 372, 1310 + i * 54, { size: 46, w: 900 }));
+      txt(ANIME.bleach.sub, 372, 1420, { size: 29, w: 600, c: MUT });
+      txt('Ver dónde verlo  →', 372, 1478, { size: 30, w: 800, c: ACC });
+    });
+    confetti(540, 1220, lt - 5.05, 60, 4, 0.6);
+    const mp = P(lt, 5.5, 6.0); if (mp > 0) pop(905, 1120, mp, () => radi(905, 1120, 0.62, lt, { look: -1, wave: true }));
+  });
+}
+
+// 3 · Buscar por captura
+{
+  const a = 11.8, kt = KT('¿Solo tienes|una *captura?*', { start: 0.15 });
+  ktEvents(a, kt); ev(a + 0.3, 'whoosh', 0.8); ev(a + 0.95, 'pop', 0.5); ev(a + 1.3, 'scan', 1.3);
+  ev(a + 3.3, 'ding'); ev(a + 3.4, 'rise'); ev(a + 4.4, 'boing');
+  scene(a, 19.0, (lt) => {
+    drawKT(kt, 540, 360, lt);
+    pill(540, 500, 'Súbela y listo', iCamera, P(lt, 0.9, 1.4));
+    const ip = eo(P(lt, 0.3, 1.0));
+    if (ip > 0) {
+      K.save(); K.globalAlpha *= cl(ip * 1.5); K.translate(540 + (1 - ip) * 420, 870); K.rotate((1 - ip) * 0.22 + Math.sin(lt * 1.3) * 0.008); K.translate(-540, -870);
+      card(110, 640, 860, 470, 40); scenery(128, 658, 824, 434, lt);
+      const sc = P(lt, 1.3, 3.0);
+      if (sc > 0 && sc < 1) {
+        const ly = 658 + (0.5 - 0.5 * Math.cos(sc * Math.PI * 3)) * 434;
+        K.save(); K.beginPath(); K.roundRect(128, 658, 824, 434, 26); K.clip();
+        const lg = K.createLinearGradient(0, ly - 90, 0, ly); lg.addColorStop(0, 'rgba(255,85,0,0)'); lg.addColorStop(1, 'rgba(255,85,0,.35)'); K.fillStyle = lg; K.fillRect(128, ly - 90, 824, 90);
+        K.fillStyle = '#FFB27A'; K.shadowColor = ACC; K.shadowBlur = 30; K.fillRect(128, ly - 3, 824, 6); K.restore();
+        K.strokeStyle = ACC; K.lineWidth = 8; K.lineCap = 'round';
+        [[150, 680, 1, 1], [930, 680, -1, 1], [150, 1070, 1, -1], [930, 1070, -1, -1]].forEach(([x, y, dx, dy]) => { K.beginPath(); K.moveTo(x, y + dy * 60); K.lineTo(x, y); K.lineTo(x + dx * 60, y); K.stroke(); });
+      }
+      K.restore();
+    }
+    const rp = P(lt, 3.3, 3.85);
+    pop(540, 1360, rp, () => {
+      card(100, 1205, 880, 315, 42);
+      poster(140, 1235, 170, 255, ANIME.frieren);
+      txt('Frieren', 345, 1300, { size: 60, w: 900 });
+      txt('Episodio 7 · minuto 12:40', 345, 1352, { size: 34, w: 600, c: MUT });
+      const fill = eo(P(lt, 3.5, 4.4)), pct = Math.round(98 * fill);
+      rr(345, 1395, 590, 22, 11, 'rgba(20,22,43,.08)'); const bg = K.createLinearGradient(345, 0, 935, 0); bg.addColorStop(0, '#34D399'); bg.addColorStop(1, OK); rr(345, 1395, Math.max(22, 590 * 0.98 * fill), 22, 11, bg);
+      txt('Similitud', 345, 1470, { size: 30, w: 600, c: MUT }); txt(pct + ' %', 935, 1472, { size: 40, w: 900, c: OK, align: 'right' });
+    });
+    const mp = P(lt, 4.4, 4.9); if (mp > 0) pop(140, 1170, mp, () => radi(140, 1170, 0.55, lt, { look: 1, seed: 1 }));
+  });
+}
+
+// 4 · Dónde verlo legal
+{
+  const a = 19.0, kt = KT('Y te dice *dónde*|*verlo* legal|en tu país', { start: 0.1, size: 92 });
+  ktEvents(a, kt); ev(a + 0.2, 'whoosh', 0.7);
+  for (let i = 0; i < 5; i++) ev(a + 1.0 + i * 0.28, 'tick', 0.9);
+  [2.45, 2.7, 2.95].forEach((x) => ev(a + x, 'pop', 0.7)); ev(a + 3.7, 'ding');
+  const countries = ['Estados Unidos', 'México', 'Argentina', 'Colombia', 'España'];
+  const plats = [['C', '#F47521', 'Crunchyroll', 'Suscripción'], ['N', '#E50914', 'Netflix', 'Suscripción'], ['P', '#00A8E1', 'Prime Video', 'Alquiler o compra']];
+  scene(a, 24.8, (lt) => {
+    drawKT(kt, 540, 400, lt);
+    rise(P(lt, 0.7, 1.2), () => {
+      card(200, 640, 680, 120, 60); iGlobe(270, 700, 56);
+      txt('PAÍS', 320, 690, { size: 24, w: 800, c: MUT });
+      K.save(); K.beginPath(); K.rect(310, 695, 520, 52); K.clip();
+      const f = cl((lt - 1.0) / 0.28, 0, countries.length - 1), i = Math.floor(f), fr = eio(f - i);
+      [i, i + 1].forEach((k, j) => { if (k >= countries.length) return; txt(countries[k], 320, 736 + (j - fr) * 56, { size: 42, w: 900 }); });
+      K.restore();
+      font(28, 700); txt('▾', 830, 714, { size: 30, w: 700, c: MUT });
+    }, 40);
+    plats.forEach(([l, c, n, s], i) => {
+      const p = P(lt, 2.4 + i * 0.25, 2.9 + i * 0.25), y = 810 + i * 175;
+      rise(p, () => {
+        card(130, y, 820, 150, 36);
+        const g = K.createLinearGradient(170, y + 25, 270, y + 125); g.addColorStop(0, c); g.addColorStop(1, '#111'); rr(170, y + 25, 100, 100, 26, g);
+        txt(l, 220, y + 96, { size: 56, w: 900, c: '#fff', align: 'center' });
+        txt(n, 300, y + 70, { size: 46, w: 900 }); txt('Disponible · ' + s, 300, y + 115, { size: 30, w: 600, c: OK });
+        const cp = eb(P(lt, 2.75 + i * 0.25, 3.1 + i * 0.25)); if (cp > 0) { K.save(); K.translate(880, y + 75); K.scale(cp, cp); okBadge(0, 0, 60); K.restore(); }
+      }, 60);
+    });
+    pop(540, 1390, P(lt, 3.7, 4.2), () => { rr(240, 1350, 600, 80, 40, OKBG); iCheck(300, 1390, 34, OK, 7); txt('Verificado en España', 335, 1404, { size: 38, w: 800, c: OK }); });
+  });
+}
+
+// 5 · Calendario y recordatorio
+{
+  const a = 24.8, kt = KT('¿Cuándo sale el|*próximo episodio?*', { start: 0.1, size: 90 });
+  ktEvents(a, kt); ev(a + 0.2, 'whoosh', 0.7);
+  for (let s = 1; s <= 5; s++) ev(a + s, 'tick', 0.5);
+  ev(a + 2.9, 'tap'); ev(a + 3.0, 'bell'); ev(a + 3.25, 'ding', 0.8); ev(a + 3.7, 'boing');
+  scene(a, 30.8, (lt) => {
+    drawKT(kt, 540, 360, lt);
+    rise(P(lt, 0.4, 1.1), () => {
+      card(100, 540, 880, 520, 44);
+      rr(140, 580, 330, 56, 28, 'rgba(255,85,0,.12)'); K.fillStyle = ACC; K.beginPath(); K.arc(172, 608, 9, 0, 7); K.fill(); txt('PRÓXIMO EPISODIO', 192, 619, { size: 26, w: 800, c: ACC });
+      txt('Tu serie favorita', 140, 715, { size: 50, w: 900 }); txt('Episodio 9 · hoy a las 18:30', 140, 765, { size: 32, w: 600, c: MUT });
+      const left = 5 * 3600 + 12 * 60 + 44 - Math.floor(lt), p2 = (n) => String(n).padStart(2, '0');
+      txt(`${p2(Math.floor(left / 3600))}:${p2(Math.floor(left % 3600 / 60))}:${p2(left % 60)}`, 540, 920, { size: 132, w: 800, fam: MONO, align: 'center' });
+      txt('en tu hora local', 540, 975, { size: 30, w: 600, c: MUT, align: 'center' });
+      rr(140, 1005, 800, 14, 7, 'rgba(20,22,43,.08)'); const pg = K.createLinearGradient(140, 0, 940, 0); pg.addColorStop(0, ACC); pg.addColorStop(1, '#FFD166'); rr(140, 1005, 800 * (0.62 + lt * 0.004), 14, 7, pg);
+      const bx = 900, by = 640, wig = Math.sin(lt * 24) * 0.35 * P(lt, 2.95, 3.05) * (1 - P(lt, 3.05, 3.8));
+      const press = lt > 2.85 && lt < 3.0 ? 0.9 : 1; K.save(); K.translate(bx, by); K.scale(press, press); K.fillStyle = lt > 2.95 ? ACC : 'rgba(255,85,0,.12)'; K.beginPath(); K.arc(0, 0, 50, 0, 7); K.fill(); iBell(0, -4, 52, wig, lt > 2.95 ? '#fff' : ACC); K.restore();
+      ripple(bx, by, lt, 2.9);
+    }, 70);
+    const days = [['HOY', 20], ['MAÑ', 21], ['MIÉ', 22], ['JUE', 23], ['VIE', 24]];
+    days.forEach(([d, n], i) => rise(P(lt, 0.9 + i * 0.07, 1.4 + i * 0.07), () => {
+      const x = 100 + i * 180; card(x, 1100, 160, 170, 34, i === 0 ? ACC : '#fff');
+      txt(d, x + 80, 1160, { size: 30, w: 800, c: i === 0 ? 'rgba(255,255,255,.85)' : MUT, align: 'center' }); txt(String(n), x + 80, 1236, { size: 62, w: 900, c: i === 0 ? '#fff' : INK, align: 'center' });
+    }, 40));
+    rise(P(lt, 3.2, 3.7), () => {
+      card(130, 1320, 820, 150, 40);
+      K.save(); K.fillStyle = 'rgba(255,85,0,.12)'; K.beginPath(); K.arc(215, 1395, 48, 0, 7); K.fill(); K.restore(); iBell(215, 1390, 50, 0);
+      txt('Recordatorio añadido', 290, 1385, { size: 42, w: 900 }); txt('Te avisa 10 min antes', 290, 1432, { size: 32, w: 600, c: MUT });
+    }, -60);
+    const mp = P(lt, 3.7, 4.2); if (mp > 0) pop(955, 1470, mp, () => radi(955, 1470, 0.5, lt, { look: -1, wave: true, seed: 2 }));
+  });
+}
+
+// 6 · Test: qué ver
+{
+  const a = 30.8, kt = KT('¿No sabes|*qué ver* hoy?', { start: 0.1 });
+  ktEvents(a, kt); ev(a + 0.2, 'whoosh', 0.7); ev(a + 0.85, 'pop', 0.5);
+  [1.5, 2.1, 2.7].forEach((x) => ev(a + x, 'tap')); ev(a + 3.15, 'whoosh', 0.6);
+  for (let i = 0; i < 6; i++) ev(a + 3.1 + i * 0.1, 'pop', 0.55);
+  const rows = [['¿Qué te apetece?', ['Acción', 'Reírme', 'Misterio', 'Romance'], 0, 1.5], ['¿Cuánto tiempo?', ['Película', 'Serie corta', 'Larga'], 1, 2.1], ['¿Qué prefieres?', ['Lo más visto', 'Joya oculta'], 0, 2.7]];
+  const recs = [ANIME.csm, ANIME.dandadan, ANIME.solo, ANIME.bleach, ANIME.edge, ANIME.mob];
+  scene(a, 37.2, (lt) => {
+    drawKT(kt, 540, 360, lt);
+    pill(540, 500, 'Test de 3 preguntas', iSpark, P(lt, 0.8, 1.3) * (1 - P(lt, 2.95, 3.2)));
+    const qa = P(lt, 0.9, 1.4) * (1 - P(lt, 3.0, 3.3));
+    if (qa > 0) {
+      K.save(); K.globalAlpha *= qa; const s = 1 - 0.06 * P(lt, 3.0, 3.3); K.translate(540, 950); K.scale(s, s); K.translate(-540, -950);
+      card(100, 640, 880, 640, 44);
+      rows.forEach(([label, opts, pick, at], r) => {
+        const y = 700 + r * 200; txt(label, 150, y + 30, { size: 36, w: 800 });
+        let x = 150; font(34, 700);
+        opts.forEach((o, i) => {
+          const w = K.measureText(o).width + 56, on = i === pick && lt >= at;
+          rr(x, y + 60, w, 76, 38, on ? ACC : '#F3F1FA', on ? null : 'rgba(20,22,43,.06)'); txt(o, x + w / 2, y + 109, { size: 34, w: 700, c: on ? '#fff' : INK, align: 'center' });
+          if (i === pick) ripple(x + w / 2, y + 98, lt, at);
+          x += w + 16;
+        });
+      });
+      K.restore();
+    }
+    recs.forEach((an, i) => {
+      const x = 115 + (i % 3) * 290, y = 560 + Math.floor(i / 3) * 470, p = P(lt, 3.1 + i * 0.1, 3.6 + i * 0.1);
+      pop(x + 130, y + 180, p, () => {
+        poster(x, y, 260, 340, an);
+        wrap(an.t, 260, 28, 800).slice(0, 3).forEach((l, k) => txt(l, x, y + 378 + k * 33, { size: 28, w: 800 }));
+      });
+    });
+  });
+}
+
+// 7 · Final de marca
+{
+  const a = 37.2, kt = KT('Encuentra cualquier anime.|Y dónde verlo.', { start: 1.1, size: 64, c: '#fff', ac: '#fff' });
+  ev(a, 'whoosh', 1); ev(a + 0.35, 'boom', 1); ev(a + 0.45, 'confetti', 1); ktEvents(a, kt); ev(a + 2.0, 'boing'); ev(a + 2.4, 'ding', 0.9); ev(a + 2.9, 'sparkle');
+  scene(a, 43.2, (lt) => {
+    const rad = eio(P(lt, 0, 0.6)) * 1500;
+    K.save(); K.beginPath(); K.arc(540, 820, rad, 0, 7); K.clip();
+    const g = K.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#FF7A2E'); g.addColorStop(0.6, '#F04E0C'); g.addColorStop(1, '#B8310A'); K.fillStyle = g; K.fillRect(0, 0, W, H);
+    K.save(); K.translate(540, 760); K.rotate(lt * 0.12); for (let i = 0; i < 16; i++) { K.rotate(Math.PI / 8); K.fillStyle = i % 2 ? 'rgba(255,255,255,.05)' : 'rgba(255,255,255,0)'; K.beginPath(); K.moveTo(0, 0); K.lineTo(-150, -1500); K.lineTo(150, -1500); K.closePath(); K.fill(); } K.restore();
+    const gl = K.createRadialGradient(540, 760, 0, 540, 760, 700); gl.addColorStop(0, 'rgba(255,220,170,.45)'); gl.addColorStop(1, 'rgba(255,220,170,0)'); K.fillStyle = gl; K.fillRect(0, 0, W, H);
+    const ip = P(lt, 0.3, 0.9), s = eb(ip);
+    if (ip > 0) { K.save(); K.translate(540, 720); K.scale(s, s); K.translate(-540, -720); appIcon(540, 720, 300, lt, true); K.restore(); }
+    confetti(540, 720, lt - 0.45, 130, 9, 1);
+    pop(540, 980, P(lt, 0.7, 1.2), () => { rich([['Ani', '#fff'], ['Radar', '#FFE2C7']], 540, 1020, 150); });
+    drawKT(kt, 540, 1170, lt);
+    pop(540, 1340, P(lt, 2.4, 2.9), () => {
+      K.save(); K.shadowColor = 'rgba(0,0,0,.25)'; K.shadowBlur = 40; K.shadowOffsetY = 14; rr(200, 1290, 680, 110, 55, '#fff'); K.restore();
+      txt('Gratis · aniradar.net', 540, 1362, { size: 48, w: 900, c: ACC, align: 'center' });
+      const sh = P(lt, 2.9, 3.6); if (sh > 0 && sh < 1) { K.save(); K.beginPath(); K.roundRect(200, 1290, 680, 110, 55); K.clip(); const sx = 120 + sh * 900; const lg = K.createLinearGradient(sx - 80, 0, sx + 80, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, 'rgba(255,200,150,.6)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); K.fillStyle = lg; K.fillRect(200, 1290, 680, 110); K.restore(); }
+    });
+    txt('Sin registro · 20 países · 6 idiomas', 540, 1470, { size: 32, w: 700, c: 'rgba(255,255,255,.85)', align: 'center', a: P(lt, 3.0, 3.5) });
+    const mp = P(lt, 2.0, 2.5); if (mp > 0) pop(860, 540, mp, () => radi(860, 540, 0.62, lt, { look: -1, wave: true, seed: 3 }));
+    K.restore();
+  }, { overlay: true });
+}
+finalize();
+</script></body></html>

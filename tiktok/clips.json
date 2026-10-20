@@ -1,0 +1,13 @@
+{
+  "_info": "Fragmentos de la grabación de pantalla de AniRadar que usa promo-real.html. in/out en segundos de la grabación original; speed = aceleración. crop quita la barra de estado del móvil y la barra inferior del navegador (vídeo de 384×848).",
+  "crop": "384:744:0:46",
+  "clips": [
+    { "id": "db1", "in": 59.0, "out": 68.4, "speed": 3.0, "nota": "escribe «Dragon ball»" },
+    { "id": "db2", "in": 68.4, "out": 73.0, "speed": 1.2, "nota": "Identificar → ficha con la portada de Goku" },
+    { "id": "naru", "in": 94.0, "out": 103.0, "speed": 1.6, "nota": "escribe «Naruto», sugerencias con portadas, abre Naruto Shippuden" },
+    { "id": "where", "in": 121.0, "out": 128.0, "speed": 1.4, "nota": "Dónde verlo (España), verificado" },
+    { "id": "extras", "in": 136.5, "out": 146.0, "speed": 2.0, "nota": "orden de visionado, personajes y fotogramas" },
+    { "id": "cal", "in": 155.0, "out": 160.5, "speed": 1.8, "nota": "calendario de emisión" },
+    { "id": "trend", "in": 163.5, "out": 176.0, "speed": 2.0, "nota": "tendencias y ficha de Chainsaw Man" }
+  ]
+}
