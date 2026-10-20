@@ -1,0 +1,777 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Talonario: haz tu factura de autónomo en 30 segundos y descárgala en PDF</title>
+<meta name="description" content="Generador de facturas para autónomos. Rellenas los datos, calcula IVA e IRPF y descargas el PDF al momento. Sin registro, tus datos se quedan en tu navegador.">
+<meta property="og:title" content="Talonario: facturas para autónomos en 30 segundos">
+<meta property="og:description" content="IVA, IRPF y PDF al instante. Gratis y sin registro.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect x='2' y='2' width='28' height='28' rx='6' fill='none' stroke='%23C53A30' stroke-width='3'/%3E%3Cpath d='M9 11h14M16 11v12' stroke='%23C53A30' stroke-width='3.5' stroke-linecap='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="fonts/fonts.css">
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"FAQPage","mainEntity":[
+{"@type":"Question","name":"¿Qué datos tiene que llevar una factura de autónomo?","acceptedAnswer":{"@type":"Answer","text":"Número y serie, fecha de emisión, tu nombre, NIF y dirección, los del cliente, la descripción de cada concepto, la base imponible, el tipo y la cuota de IVA, la retención de IRPF si procede y el importe total."}},
+{"@type":"Question","name":"¿Cuándo aplico la retención de IRPF y cuánto?","acceptedAnswer":{"@type":"Answer","text":"Solo cuando tu cliente es una empresa o un profesional en España. El tipo general es el 15 %; durante el año en que te das de alta y los dos siguientes puedes aplicar el 7 %. A particulares no se les retiene."}},
+{"@type":"Question","name":"¿Puedo hacer una factura sin IVA?","acceptedAnswer":{"@type":"Answer","text":"Sí, si tu actividad está exenta o la operación no está sujeta. La factura tiene que indicar el motivo, por ejemplo «Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992»."}},
+{"@type":"Question","name":"¿Dónde se guardan mis datos?","acceptedAnswer":{"@type":"Answer","text":"Solo en tu navegador. Talonario no tiene servidor ni cuentas: nada de lo que escribes se envía a ningún sitio."}}
+]}
+</script>
+<style>
+/* ---------- tokens ---------- */
+:root {
+  --papel: #E7ECF1;
+  --hoja: #FFFFFF;
+  --tinta: #17223B;
+  --sello: #C53A30;
+  --raya: #C4CFDA;
+  --lapiz: #5B6878;
+  --raya-suave: #DCE3EA;
+  --ui: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
+  --doc: "IBM Plex Mono", "Courier New", monospace;
+  --doc-sans: "IBM Plex Sans", "Helvetica Neue", Arial, sans-serif;
+  --ease-out: cubic-bezier(.165, .84, .44, 1);
+  --ease-stamp: cubic-bezier(.34, 1.56, .64, 1);
+  --ancho: 1180px;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0; background: var(--papel); color: var(--tinta);
+  font-family: var(--ui); font-size: 16px; line-height: 1.5;
+  font-optical-sizing: auto;
+}
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--tinta); outline-offset: 2px; border-radius: 2px; }
+.visually-hidden { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* ---------- cabecera ---------- */
+.cab {
+  max-width: var(--ancho); margin: 0 auto; padding: 18px 20px 6px;
+  display: flex; align-items: baseline; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+}
+.marca { display: flex; align-items: baseline; gap: 12px; text-decoration: none; }
+.marca strong { font-size: 26px; font-weight: 700; letter-spacing: -.02em; }
+.marca span { color: var(--lapiz); font-size: 15px; }
+.cab-acciones { display: flex; gap: 8px; align-items: center; }
+
+/* botones */
+.btn {
+  display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+  padding: 10px 16px; border-radius: 6px; border: 1.5px solid var(--tinta);
+  background: transparent; font-weight: 600; font-size: 15px; line-height: 1.2; white-space: nowrap;
+  transition: background-color 150ms ease, color 150ms ease;
+}
+.btn:hover { background: rgba(23, 34, 59, .06); }
+.btn-tinta { background: var(--tinta); color: var(--hoja); }
+.btn-tinta:hover { background: #22304f; }
+.btn-sello { background: var(--sello); border-color: var(--sello); color: #fff; }
+.btn-sello:hover { background: #ad2f27; }
+.btn-plano { border-color: transparent; padding-inline: 10px; font-weight: 500; }
+.btn-plano:hover { background: rgba(23, 34, 59, .06); }
+.btn-grande { padding: 14px 22px; font-size: 17px; }
+.btn[disabled] { opacity: .45; cursor: default; }
+
+/* ---------- aplicación ---------- */
+.app { max-width: var(--ancho); margin: 0 auto; padding: 8px 20px 40px; }
+.app-intro { margin: 0 0 22px; max-width: 60ch; }
+.app-intro h1 { font-size: 28px; line-height: 1.15; font-weight: 600; letter-spacing: -.015em; margin: 0 0 6px; text-wrap: balance; }
+.app-intro p { margin: 0; color: var(--lapiz); }
+.panel { display: grid; grid-template-columns: minmax(320px, 430px) minmax(0, 1fr); gap: 36px; align-items: start; }
+
+/* --- formulario: la matriz del talonario --- */
+.matriz { }
+.grp { padding: 14px 0 18px; border-top: 3px double var(--raya); }
+.grp:first-child { border-top: 0; padding-top: 0; }
+.grp-cab { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin: 0 0 8px; }
+.grp h2 { font-size: 17px; font-weight: 600; margin: 0; }
+.grp-cab small { color: var(--lapiz); font-size: 13px; }
+.fila { display: grid; gap: 0 16px; grid-template-columns: 1fr 1fr; }
+.fila-3 { grid-template-columns: 1fr 1fr 1fr; }
+.campo { display: flex; flex-direction: column; padding: 6px 0 2px; min-width: 0; }
+.campo-ancho { grid-column: 1 / -1; }
+.campo label { font-size: 13px; color: var(--lapiz); margin-bottom: 1px; }
+.campo input, .campo select, .campo textarea {
+  width: 100%; border: 0; border-bottom: 1.5px solid var(--raya); background: transparent;
+  padding: 5px 0 6px; border-radius: 0; font-size: 16px; line-height: 1.3; min-width: 0;
+  transition: border-color 150ms ease;
+}
+.campo textarea { resize: vertical; min-height: 58px; }
+.campo input:focus-visible, .campo select:focus-visible, .campo textarea:focus-visible { outline: 0; border-bottom-color: var(--tinta); border-bottom-width: 2px; padding-bottom: 5.5px; }
+.campo input::placeholder, .campo textarea::placeholder { color: #9AA6B4; }
+.campo select { appearance: none; -webkit-appearance: none; background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' fill='none' stroke='%2317223B' stroke-width='1.6'/%3E%3C/svg%3E") no-repeat right 2px center; padding-right: 22px; }
+.campo input[type="number"] { -moz-appearance: textfield; }
+.campo input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; }
+.pista { font-size: 13px; color: var(--lapiz); margin: 4px 0 0; }
+.pista a { color: var(--tinta); }
+
+/* líneas de concepto */
+.lineas { display: grid; gap: 2px; margin-bottom: 8px; }
+.linea { display: grid; grid-template-columns: minmax(0, 1fr) 54px 84px 58px 28px; gap: 10px; align-items: end; }
+.linea-cab { font-size: 12.5px; color: var(--lapiz); padding-bottom: 2px; }
+.linea-cab > span:nth-child(n+2) { text-align: right; }
+.linea input {
+  width: 100%; border: 0; border-bottom: 1.5px solid var(--raya); background: transparent; padding: 7px 0 6px; font-size: 16px; min-width: 0; border-radius: 0;
+}
+.linea input:focus-visible { outline: 0; border-bottom-color: var(--tinta); border-bottom-width: 2px; padding-bottom: 5.5px; }
+.linea input.num { text-align: right; font-variant-numeric: tabular-nums; }
+.linea .quitar {
+  width: 28px; height: 32px; border: 0; background: transparent; color: var(--lapiz); border-radius: 4px; font-size: 20px; line-height: 1;
+}
+.linea .quitar:hover { color: var(--sello); background: rgba(197, 58, 48, .08); }
+.linea.nueva { animation: entra 180ms var(--ease-out) both; }
+@keyframes entra { from { opacity: 0; transform: translateY(-4px); } }
+.linea-importe { font-size: 13px; color: var(--lapiz); text-align: right; font-variant-numeric: tabular-nums; grid-column: 1 / -1; margin-top: -2px; padding-right: 38px; }
+.btn-linea { margin-top: 4px; }
+
+/* resumen bajo el formulario (móvil) */
+.acciones-form { display: none; }
+
+/* --- la hoja --- */
+.hoja-col { position: sticky; top: 16px; }
+.hoja-marco { width: 100%; overflow: hidden; }
+.hoja-escala { transform-origin: top left; }
+.hoja {
+  width: 210mm; min-height: 297mm; background: var(--hoja); color: #111827;
+  padding: 16mm 16mm 18mm; font-family: var(--doc); font-size: 10pt; line-height: 1.45;
+  position: relative; box-shadow: 0 1px 0 rgba(23, 34, 59, .12), 0 18px 40px -24px rgba(23, 34, 59, .45);
+  border-top: 2px dashed var(--raya);
+}
+.hoja.moderna { font-family: var(--doc-sans); font-size: 10.5pt; }
+.hoja-cab { display: flex; justify-content: space-between; align-items: flex-start; gap: 10mm; margin-bottom: 10mm; }
+.hoja-titulo { font-size: 22pt; font-weight: 700; letter-spacing: .02em; line-height: 1; margin: 0 0 3mm; }
+.hoja-num { font-size: 12pt; font-weight: 600; }
+.hoja-fechas { text-align: right; font-size: 9.5pt; }
+.hoja-fechas div + div { margin-top: 1mm; }
+.hoja-fechas b { font-weight: 600; }
+.hoja-logo { max-width: 48mm; max-height: 22mm; object-fit: contain; display: block; margin-bottom: 4mm; }
+.hoja-partes { display: grid; grid-template-columns: 1fr 1fr; gap: 10mm; margin-bottom: 10mm; font-size: 9.5pt; }
+.hoja-partes h3 { font-size: 8.5pt; font-weight: 600; color: #6B7280; margin: 0 0 1.5mm; }
+.hoja-partes p { margin: 0; white-space: pre-line; }
+.hoja-partes .nombre { font-weight: 600; font-size: 10.5pt; }
+.hoja table { width: 100%; border-collapse: collapse; font-size: 9.5pt; }
+.hoja th { text-align: left; font-weight: 600; font-size: 8.5pt; color: #6B7280; padding: 0 0 2mm; border-bottom: 1.5px solid #111827; }
+.hoja td { padding: 2.4mm 0; border-bottom: 1px solid var(--raya-suave); vertical-align: top; }
+.hoja th.n, .hoja td.n { text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.hoja td.concepto { padding-right: 4mm; white-space: pre-line; }
+.hoja .vacio { color: #9AA6B4; }
+.totales { margin: 6mm 0 0 auto; width: 84mm; font-size: 9.5pt; }
+.totales div { display: flex; justify-content: space-between; gap: 6mm; padding: 1.6mm 0; border-bottom: 1px solid var(--raya-suave); font-variant-numeric: tabular-nums; }
+.totales .total { border-bottom: 0; border-top: 1.5px solid #111827; margin-top: 1mm; padding-top: 3mm; font-weight: 700; font-size: 13pt; color: var(--sello); }
+.hoja-pie { margin-top: 12mm; font-size: 9pt; display: grid; gap: 4mm; }
+.hoja-pie h3 { font-size: 8.5pt; font-weight: 600; color: #6B7280; margin: 0 0 1mm; }
+.hoja-pie p { margin: 0; white-space: pre-line; }
+.hoja-credito { position: absolute; left: 16mm; bottom: 8mm; font-size: 8pt; color: #9AA6B4; }
+.hoja-credito a { color: inherit; text-decoration: none; }
+
+/* el sello */
+.sello {
+  position: absolute; right: 18mm; bottom: 34mm; transform: rotate(-8deg);
+  color: var(--sello); border: 2.2px solid currentColor; border-radius: 3mm; padding: 2.5mm 5mm;
+  font-family: var(--doc); font-weight: 700; font-size: 20pt; letter-spacing: .1em; line-height: 1;
+  box-shadow: inset 0 0 0 1.2px #fff, inset 0 0 0 2px currentColor; opacity: .88;
+  mix-blend-mode: multiply;
+}
+.sello small { display: block; font-size: 8pt; letter-spacing: .04em; font-weight: 500; margin-top: 1.5mm; }
+.sello.golpe { animation: golpe 320ms var(--ease-stamp) both; }
+@keyframes golpe { from { opacity: 0; transform: rotate(-14deg) scale(1.6); } to { opacity: .88; transform: rotate(-8deg) scale(1); } }
+
+.hoja-acciones { display: flex; align-items: center; justify-content: space-between; gap: 14px; margin-top: 16px; flex-wrap: wrap; }
+.total-vivo { font-size: 15px; color: var(--lapiz); }
+.total-vivo b { display: block; font-size: 26px; font-weight: 700; color: var(--tinta); letter-spacing: -.01em; font-variant-numeric: tabular-nums; }
+.aviso { color: var(--lapiz); font-size: 14px; margin: 10px 0 0; min-height: 1.2em; }
+.aviso.rojo { color: var(--sello); }
+.pista-pdf { color: var(--lapiz); font-size: 14px; margin: 8px 0 0; }
+.hoja-opciones { display: flex; gap: 16px; flex-wrap: wrap; margin-top: 12px; font-size: 14px; color: var(--lapiz); align-items: center; }
+.hoja-opciones label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+.hoja-opciones input[type="checkbox"] { width: 17px; height: 17px; accent-color: var(--tinta); margin: 0; }
+.hoja-opciones select { border: 0; border-bottom: 1.5px solid var(--raya); background: transparent; padding: 2px 0; }
+
+/* barra fija en móvil */
+.barra {
+  display: none; position: fixed; left: 0; right: 0; bottom: 0; z-index: 20;
+  background: var(--hoja); border-top: 1.5px solid var(--raya); padding: 10px 16px calc(10px + env(safe-area-inset-bottom));
+  align-items: center; justify-content: space-between; gap: 12px;
+}
+.barra .total-vivo b { font-size: 20px; }
+
+/* ---------- secciones de abajo ---------- */
+.seccion { max-width: var(--ancho); margin: 0 auto; padding: 44px 20px; border-top: 3px double var(--raya); }
+.seccion h2 { font-size: 24px; font-weight: 600; letter-spacing: -.015em; margin: 0 0 18px; }
+.porque { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 28px; max-width: 980px; }
+.porque p { margin: 0; font-size: 17px; max-width: 34ch; }
+.porque p b { display: block; font-weight: 600; margin-bottom: 4px; }
+
+.precios table { width: 100%; max-width: 760px; border-collapse: collapse; font-size: 16px; }
+.precios th { text-align: left; font-weight: 600; padding: 0 0 10px; border-bottom: 1.5px solid var(--tinta); vertical-align: bottom; }
+.precios th span { display: block; font-weight: 400; color: var(--lapiz); font-size: 14px; }
+.precios td { padding: 10px 0; border-bottom: 1px solid var(--raya); vertical-align: top; }
+.precios th:nth-child(n+2), .precios td:nth-child(n+2) { width: 24%; padding-left: 16px; }
+.precios td.no { color: var(--lapiz); }
+.precios td.si { font-weight: 500; }
+.precios tfoot td { border-bottom: 0; padding-top: 18px; }
+.precios .nota { color: var(--lapiz); font-size: 14px; margin: 14px 0 0; max-width: 66ch; }
+
+.faq-lista { max-width: 760px; }
+.faq details { border-bottom: 1px solid var(--raya); }
+.faq summary { cursor: pointer; padding: 14px 0; font-weight: 600; font-size: 17px; list-style: none; display: flex; justify-content: space-between; gap: 12px; }
+.faq summary::-webkit-details-marker { display: none; }
+.faq summary::after { content: "+"; color: var(--lapiz); font-weight: 400; flex: none; }
+.faq details[open] summary::after { content: "–"; }
+.faq .resp { padding: 0 0 16px; max-width: 66ch; color: #2A3447; }
+.faq .resp p { margin: 0 0 8px; }
+.faq .resp p:last-child { margin: 0; }
+
+.pie { max-width: var(--ancho); margin: 0 auto; padding: 20px 20px 36px; color: var(--lapiz); font-size: 14px; display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; border-top: 1px solid var(--raya); }
+
+/* ---------- diálogos ---------- */
+dialog { border: 0; border-radius: 10px; padding: 0; background: var(--hoja); color: var(--tinta); width: min(92vw, 520px); box-shadow: 0 30px 80px -30px rgba(23, 34, 59, .6); }
+dialog::backdrop { background: rgba(23, 34, 59, .45); }
+.dlg { padding: 26px 26px 22px; }
+.dlg h2 { margin: 0 0 4px; font-size: 24px; font-weight: 600; letter-spacing: -.015em; }
+.dlg .precio { color: var(--lapiz); margin: 0 0 16px; font-size: 16px; }
+.dlg ul { margin: 0 0 20px; padding: 0 0 0 18px; }
+.dlg li { margin: 4px 0; }
+.dlg-acciones { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.dlg-cerrar { position: absolute; top: 10px; right: 10px; width: 36px; height: 36px; border: 0; background: transparent; border-radius: 6px; font-size: 22px; color: var(--lapiz); }
+.dlg-cerrar:hover { background: rgba(23, 34, 59, .06); }
+.clave { margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--raya); }
+.clave .campo { padding: 0; }
+.clave-fila { display: flex; gap: 10px; align-items: flex-end; }
+.clave-fila .campo { flex: 1; }
+.estado { font-size: 14px; margin: 8px 0 0; min-height: 1.2em; }
+.estado.ok { color: #1B7F4E; }
+.estado.mal { color: var(--sello); }
+
+.hist { display: grid; gap: 0; max-height: 50vh; overflow: auto; }
+.hist-fila { display: grid; grid-template-columns: 1fr auto; gap: 10px; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--raya); }
+.hist-fila b { font-weight: 600; }
+.hist-fila small { display: block; color: var(--lapiz); }
+.hist-fila .ops { display: flex; gap: 4px; }
+.hist-vacio { color: var(--lapiz); padding: 14px 0; }
+
+/* ---------- impresión ---------- */
+@media print {
+  @page { size: A4; margin: 0; }
+  body { background: #fff; }
+  body > :not(.solo-impresion) { display: none !important; }
+  .solo-impresion { display: block !important; }
+  .hoja { box-shadow: none; border-top: 0; min-height: 297mm; width: 210mm; margin: 0; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  .sello { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+}
+.solo-impresion { display: none; }
+
+/* ---------- movimiento reducido ---------- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: .001ms !important; transition-duration: .001ms !important; }
+}
+
+/* ---------- responsive ---------- */
+@media (max-width: 1023px) {
+  .panel { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .hoja-col { position: static; }
+  .hoja-acciones { display: none; }
+  .barra { display: flex; }
+  body { padding-bottom: 86px; }
+  .acciones-form { display: block; margin-top: 8px; }
+  .porque { grid-template-columns: 1fr; gap: 18px; }
+}
+@media (max-width: 560px) {
+  .cab { padding-top: 14px; }
+  .marca span { display: none; }
+  .app-intro h1 { font-size: 24px; }
+  .fila, .fila-3 { grid-template-columns: 1fr; }
+  .fila .campo-mitad { grid-column: auto; }
+  .fila-2m { grid-template-columns: 1fr 1fr; }
+  .linea { grid-template-columns: minmax(0, 1fr) 40px 70px 46px 22px; gap: 6px; }
+  .linea input { font-size: 15px; }
+  .precios th:nth-child(n+2), .precios td:nth-child(n+2) { width: 21%; padding-left: 8px; }
+  .precios table { font-size: 14.5px; }
+  .seccion { padding: 32px 20px; }
+}
+</style>
+</head>
+<body>
+
+<header class="cab">
+  <a class="marca" href="#"><strong>Talonario</strong><span>facturas para autónomos</span></a>
+  <div class="cab-acciones">
+    <button type="button" class="btn btn-plano" id="btnHistorial" hidden>Mis facturas</button>
+    <button type="button" class="btn btn-plano" id="btnNueva">Nueva factura</button>
+    <button type="button" class="btn" id="btnPro">Pro · 19 €</button>
+  </div>
+</header>
+
+<main class="app">
+  <div class="app-intro">
+    <h1>Haz tu factura en 30 segundos y descárgala en PDF.</h1>
+    <p>Calcula el IVA y la retención, numera por ti y no te pide cuenta. Lo que escribes se queda en tu navegador.</p>
+  </div>
+
+  <div class="panel">
+    <!-- ======== matriz (formulario) ======== -->
+    <form class="matriz" id="form" autocomplete="on" novalidate>
+
+      <section class="grp">
+        <div class="grp-cab"><h2>Tú</h2><small>se guarda para la próxima</small></div>
+        <div class="fila">
+          <div class="campo campo-ancho"><label for="iNombre">Nombre o razón social</label><input id="iNombre" data-k="issuer.name" placeholder="Marta López Ruiz"></div>
+          <div class="campo"><label for="iNif">NIF</label><input id="iNif" data-k="issuer.nif" placeholder="12345678A" autocapitalize="characters"></div>
+          <div class="campo"><label for="iTel">Teléfono</label><input id="iTel" data-k="issuer.phone" type="tel" placeholder="600 000 000"></div>
+          <div class="campo campo-ancho"><label for="iDir">Dirección</label><input id="iDir" data-k="issuer.addr" placeholder="Calle Mayor 3, 2.º B, 28013 Madrid"></div>
+          <div class="campo campo-ancho"><label for="iEmail">Correo</label><input id="iEmail" data-k="issuer.email" type="email" placeholder="marta@ejemplo.com"></div>
+          <div class="campo campo-ancho" id="campoLogo" hidden>
+            <label for="iLogo">Tu logo</label>
+            <div class="clave-fila"><input id="iLogo" type="file" accept="image/*"><button type="button" class="btn btn-plano" id="btnQuitarLogo" hidden>Quitar</button></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="grp">
+        <div class="grp-cab"><h2>Cliente</h2><small id="clientesPista"></small></div>
+        <div class="fila">
+          <div class="campo campo-ancho"><label for="cNombre">Nombre o empresa</label><input id="cNombre" data-k="client.name" list="listaClientes" placeholder="Estudio Norte S.L."><datalist id="listaClientes"></datalist></div>
+          <div class="campo"><label for="cNif">NIF</label><input id="cNif" data-k="client.nif" placeholder="B12345678" autocapitalize="characters"></div>
+          <div class="campo"><label for="cEmail">Correo</label><input id="cEmail" data-k="client.email" type="email" placeholder="opcional"></div>
+          <div class="campo campo-ancho"><label for="cDir">Dirección</label><input id="cDir" data-k="client.addr" placeholder="Av. Diagonal 100, 08019 Barcelona"></div>
+        </div>
+      </section>
+
+      <section class="grp">
+        <div class="grp-cab"><h2>Factura</h2></div>
+        <div class="fila fila-3 fila-2m">
+          <div class="campo"><label for="fSerie">Serie</label><input id="fSerie" data-k="serie" placeholder="2026"></div>
+          <div class="campo"><label for="fNum">Número</label><input id="fNum" data-k="number" inputmode="numeric" placeholder="001"></div>
+          <div class="campo"><label for="fPais">País y moneda</label>
+            <select id="fPais" data-k="preset"></select></div>
+          <div class="campo"><label for="fFecha">Fecha</label><input id="fFecha" data-k="date" type="date"></div>
+          <div class="campo"><label for="fVence">Vencimiento</label><input id="fVence" data-k="due" type="date"></div>
+        </div>
+      </section>
+
+      <section class="grp">
+        <div class="grp-cab"><h2>Conceptos</h2><small id="taxNombreCab"></small></div>
+        <div class="lineas" id="lineas"></div>
+        <button type="button" class="btn btn-plano btn-linea" id="btnLinea">+ Añadir línea</button>
+      </section>
+
+      <section class="grp">
+        <div class="grp-cab"><h2>Retención y pago</h2></div>
+        <div class="fila">
+          <div class="campo"><label for="fRet" id="fRetLabel">Retención IRPF (%)</label><input id="fRet" data-k="ret" type="number" step="0.5" min="0" max="100" inputmode="decimal" list="retLista"><datalist id="retLista"><option value="0"><option value="7"><option value="15"></datalist></div>
+          <div class="campo campo-ancho" id="campoExento" hidden>
+            <label for="fExento">Motivo del 0 % de IVA</label>
+            <select id="fExento" data-k="exemptReason">
+              <option value="Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992.">Exenta (art. 20 LIVA)</option>
+              <option value="Operación no sujeta a IVA conforme al artículo 7 de la Ley 37/1992.">No sujeta (art. 7 LIVA)</option>
+              <option value="Inversión del sujeto pasivo conforme al artículo 84 de la Ley 37/1992.">Inversión del sujeto pasivo (art. 84 LIVA)</option>
+              <option value="">Sin mención</option>
+            </select>
+          </div>
+          <div class="campo campo-ancho"><label for="fPago">Forma de pago</label><input id="fPago" data-k="payment" placeholder="Transferencia a ES12 3456 7890 1234 5678 9012"></div>
+          <div class="campo campo-ancho"><label for="fNotas">Notas</label><textarea id="fNotas" data-k="notes" rows="2" placeholder="Gracias por confiar en mí. Pago a 30 días."></textarea></div>
+        </div>
+        <p class="pista" id="pistaRet">Solo si tu cliente es una empresa o un profesional en España: 15 % en general, 7 % en el año de alta y los dos siguientes. A particulares no se les retiene.</p>
+      </section>
+
+      <div class="acciones-form">
+        <p class="aviso" id="avisoMovil"></p>
+      </div>
+    </form>
+
+    <!-- ======== hoja ======== -->
+    <div class="hoja-col">
+      <div class="hoja-marco" id="marco">
+        <div class="hoja-escala" id="escala">
+          <article class="hoja" id="hoja" aria-label="Vista previa de la factura"></article>
+        </div>
+      </div>
+      <div class="hoja-opciones">
+        <label><input type="checkbox" id="chkPagada"> Marcar como pagada</label>
+        <label id="optPlantilla" hidden>Plantilla <select id="selPlantilla"><option value="maquina">Mecanografiada</option><option value="moderna">Moderna</option></select></label>
+      </div>
+      <div class="hoja-acciones">
+        <div class="total-vivo">Total a cobrar <b id="totalVivo">0,00 €</b></div>
+        <button type="button" class="btn btn-tinta btn-grande" id="btnPdf">Descargar PDF</button>
+      </div>
+      <p class="aviso" id="aviso"></p>
+      <p class="pista-pdf" id="pistaPdf" hidden>En la ventana que se abre, elige «Guardar como PDF» como destino o impresora.</p>
+    </div>
+  </div>
+</main>
+
+<div class="barra">
+  <div class="total-vivo">Total a cobrar <b id="totalVivoMovil">0,00 €</b></div>
+  <button type="button" class="btn btn-tinta" id="btnPdfMovil">Descargar PDF</button>
+</div>
+
+<section class="seccion">
+  <h2>Por qué Talonario</h2>
+  <div class="porque">
+    <p><b>Sin cuenta ni espera.</b> Abres la página, rellenas y descargas. Tu nombre y tu NIF se recuerdan para la siguiente.</p>
+    <p><b>Nada sale de tu navegador.</b> No hay servidor que guarde tus facturas ni las de tus clientes.</p>
+    <p><b>Con los datos que exige Hacienda.</b> Número y serie, fechas, NIF de las dos partes, base, tipo y cuota de IVA, retención y total.</p>
+  </div>
+</section>
+
+<section class="seccion precios" id="precios">
+  <h2>Precios</h2>
+  <table>
+    <thead><tr><th scope="col">Qué incluye</th><th scope="col">Gratis</th><th scope="col">Pro <span>19 € una sola vez</span></th></tr></thead>
+    <tbody>
+      <tr><td>Facturas y PDF sin límite</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>IVA, retención y numeración automática</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>Sello «Pagada»</td><td class="si">Sí</td><td class="si">Sí</td></tr>
+      <tr><td>Línea «Hecho con Talonario» al pie del PDF</td><td>Aparece</td><td class="si">No aparece</td></tr>
+      <tr><td>Tu logo en la factura</td><td class="no">No</td><td class="si">Sí</td></tr>
+      <tr><td>Clientes guardados y autocompletado</td><td class="no">No</td><td class="si">Sí</td></tr>
+      <tr><td>Historial: reabre, duplica y descarga facturas anteriores</td><td class="no">No</td><td class="si">Sí</td></tr>
+      <tr><td>Plantilla moderna además de la mecanografiada</td><td class="no">No</td><td class="si">Sí</td></tr>
+    </tbody>
+    <tfoot><tr><td></td><td><a class="btn btn-plano" href="#form">Empezar</a></td><td><button type="button" class="btn btn-tinta" id="btnProPrecios">Comprar Pro</button></td></tr></tfoot>
+  </table>
+  <p class="nota">Pago único, sin suscripción. Al pagar recibes una clave por correo; la pegas aquí y Pro queda activado en este navegador.</p>
+</section>
+
+<section class="seccion faq">
+  <h2>Preguntas frecuentes</h2>
+  <div class="faq-lista">
+  <details><summary>¿Qué datos tiene que llevar una factura de autónomo?</summary><div class="resp"><p>Número y serie, fecha de emisión, tu nombre, NIF y dirección, los mismos datos del cliente, la descripción de cada concepto, la base imponible, el tipo y la cuota de IVA, la retención de IRPF si procede y el importe total. Talonario los coloca todos.</p></div></details>
+  <details><summary>¿Cuándo aplico la retención de IRPF y cuánto?</summary><div class="resp"><p>Solo cuando tu cliente es una empresa o un profesional en España. El tipo general es el 15 %. Durante el año en que te das de alta y los dos siguientes puedes aplicar el 7 %. Si facturas a un particular, no hay retención: pon 0.</p></div></details>
+  <details><summary>¿Puedo hacer una factura sin IVA?</summary><div class="resp"><p>Sí, cuando tu actividad está exenta (por ejemplo, formación o determinados servicios sanitarios) o la operación no está sujeta. Pon 0 en el IVA de la línea y elige el motivo: la factura tiene que indicarlo.</p></div></details>
+  <details><summary>¿Cómo numero las facturas?</summary><div class="resp"><p>De forma correlativa y sin saltos dentro de cada serie. Lo habitual es una serie por año: 2026-001, 2026-002… Talonario recuerda el último número y propone el siguiente.</p></div></details>
+  <details><summary>¿Dónde se guardan mis datos?</summary><div class="resp"><p>Solo en tu navegador, en este dispositivo. Talonario no tiene servidor ni cuentas: nada de lo que escribes se envía a ningún sitio. Si borras los datos del navegador, se borran también; descarga tus PDF.</p></div></details>
+  <details><summary>¿Y Veri*Factu?</summary><div class="resp"><p>Veri*Factu es el sistema de la Agencia Tributaria para que los programas de facturación registren cada factura. Su entrada en vigor se ha aplazado varias veces; para autónomos está prevista para 2027. Talonario crea el PDF de la factura y no envía nada a Hacienda. Comprueba la fecha vigente en la web de la Agencia Tributaria y, cuando sea obligatorio, emite las facturas con un programa adaptado.</p></div></details>
+  </div>
+</section>
+
+<footer class="pie">
+  <span>Talonario. Hecho para autónomos que quieren cobrar, no pelearse con un programa.</span>
+  <span><a href="#precios">Precios</a> · <a href="mailto:hola@talonario.app">Contacto</a></span>
+</footer>
+
+<!-- ======== diálogo Pro ======== -->
+<dialog id="dlgPro">
+  <form method="dialog" class="dlg">
+    <button type="submit" class="dlg-cerrar" aria-label="Cerrar">×</button>
+    <h2>Talonario Pro</h2>
+    <p class="precio">19 € una sola vez. Para siempre, en este navegador.</p>
+    <ul>
+      <li>Sin la línea «Hecho con Talonario» en el PDF</li>
+      <li>Tu logo en la factura</li>
+      <li>Clientes guardados y autocompletado</li>
+      <li>Historial: reabre, duplica y vuelve a descargar</li>
+      <li>Plantilla moderna</li>
+    </ul>
+    <div class="dlg-acciones">
+      <a class="btn btn-tinta" id="btnComprar" href="#" target="_blank" rel="noopener">Comprar Pro</a>
+      <span id="comprarNota" style="color:var(--lapiz);font-size:14px"></span>
+    </div>
+    <div class="clave">
+      <div class="clave-fila">
+        <div class="campo"><label for="inClave">¿Ya tienes tu clave? Pégala aquí</label><input id="inClave" placeholder="XXXX-XXXX-XXXX-XXXX" autocomplete="off"></div>
+        <button type="button" class="btn" id="btnActivar">Activar</button>
+      </div>
+      <p class="estado" id="estadoClave"></p>
+    </div>
+  </form>
+</dialog>
+
+<!-- ======== diálogo historial ======== -->
+<dialog id="dlgHist">
+  <form method="dialog" class="dlg">
+    <button type="submit" class="dlg-cerrar" aria-label="Cerrar">×</button>
+    <h2>Mis facturas</h2>
+    <p class="precio">Guardadas en este navegador al descargar el PDF.</p>
+    <div class="hist" id="hist"></div>
+    <div class="dlg-acciones" style="margin-top:16px"><button type="button" class="btn btn-plano" id="btnExportar">Exportar copia (JSON)</button></div>
+  </form>
+</dialog>
+
+<!-- la hoja que se imprime (copia de la vista previa, sin escalar) -->
+<div class="solo-impresion" id="impresion"></div>
+
+<script>
+/* ===================== CONFIGURACIÓN (lo único que tienes que tocar) =====================
+   1) Crea el producto «Talonario Pro» (19 €) en Lemon Squeezy o Gumroad con claves de licencia activadas.
+   2) Pega aquí el enlace de pago y el identificador del producto. El comprador recibe la clave por correo y la pega en la web.
+   3) Borra demoCode antes de publicar: sirve solo para probar Pro. */
+const CONFIG = {
+  site: 'talonario.app',
+  checkoutUrl: '',              // p. ej. 'https://tutienda.lemonsqueezy.com/checkout/buy/…' o 'https://tuusuario.gumroad.com/l/talonario'
+  provider: 'lemonsqueezy',     // 'lemonsqueezy' o 'gumroad'
+  productId: '',                // Gumroad: el «product_id» del producto. Lemon Squeezy: el id numérico del producto (para comprobar que la clave es de este producto)
+  demoCode: 'TALONARIO-DEMO'
+};
+
+/* ===================== datos ===================== */
+const PRESETS = {
+  ES: { label: 'España (€)', currency: 'EUR', locale: 'es-ES', tax: 'IVA', rates: [21, 10, 4, 0], ret: 15, retLabel: 'Retención IRPF (%)' },
+  MX: { label: 'México ($)', currency: 'MXN', locale: 'es-MX', tax: 'IVA', rates: [16, 8, 0], ret: 0, retLabel: 'Retención (%)' },
+  AR: { label: 'Argentina ($)', currency: 'ARS', locale: 'es-AR', tax: 'IVA', rates: [21, 10.5, 27, 0], ret: 0, retLabel: 'Retención (%)' },
+  CO: { label: 'Colombia ($)', currency: 'COP', locale: 'es-CO', tax: 'IVA', rates: [19, 5, 0], ret: 0, retLabel: 'Retención (%)' },
+  CL: { label: 'Chile ($)', currency: 'CLP', locale: 'es-CL', tax: 'IVA', rates: [19, 0], ret: 0, retLabel: 'Retención (%)' },
+  PE: { label: 'Perú (S/)', currency: 'PEN', locale: 'es-PE', tax: 'IGV', rates: [18, 0], ret: 0, retLabel: 'Retención (%)' },
+  US: { label: 'Estados Unidos ($)', currency: 'USD', locale: 'en-US', tax: 'Impuesto', rates: [0, 5, 7, 8.25, 10], ret: 0, retLabel: 'Retención (%)' },
+  EU: { label: 'Otro país de la UE (€)', currency: 'EUR', locale: 'es-ES', tax: 'IVA', rates: [21, 20, 19, 0], ret: 0, retLabel: 'Retención (%)' }
+};
+const $ = (s) => document.querySelector(s);
+const LS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : JSON.parse(v); } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (_) {} },
+  del(k) { try { localStorage.removeItem(k); } catch (_) {} }
+};
+const hoy = () => new Date().toISOString().slice(0, 10);
+const masDias = (iso, n) => { const d = new Date(iso + 'T00:00:00'); d.setDate(d.getDate() + n); return d.toISOString().slice(0, 10); };
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = (v) => { const n = parseFloat(String(v).replace(',', '.')); return isFinite(n) ? n : 0; };
+const linea = () => ({ desc: '', qty: 1, price: '', tax: PRESETS[state.preset].rates[0] });
+
+let pro = LS.get('tal_pro', null);
+const issuerGuardado = LS.get('tal_issuer', {});
+const state = Object.assign({
+  preset: 'ES', issuer: { name: '', nif: '', addr: '', email: '', phone: '', logo: '' }, client: { name: '', nif: '', addr: '', email: '' },
+  serie: String(new Date().getFullYear()), number: '', date: hoy(), due: masDias(hoy(), 30),
+  lines: [], ret: 15, exemptReason: 'Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992.',
+  payment: '', notes: '', paid: false, template: 'maquina'
+}, LS.get('tal_draft', {}));
+Object.assign(state.issuer, issuerGuardado);
+if (!state.lines.length) state.lines = [linea()];
+if (!state.number) state.number = siguienteNumero(state.serie);
+
+function siguienteNumero(serie) { const seq = LS.get('tal_seq', {}); return String((seq[serie] || 0) + 1).padStart(3, '0'); }
+const P = () => PRESETS[state.preset] || PRESETS.ES;
+const fmt = (n) => new Intl.NumberFormat(P().locale, { style: 'currency', currency: P().currency, useGrouping: 'always' }).format(n || 0);
+const fmtPct = (n) => new Intl.NumberFormat(P().locale, { maximumFractionDigits: 2 }).format(n) + ' %';
+const fmtFecha = (iso) => iso ? new Date(iso + 'T00:00:00').toLocaleDateString(P().locale, { day: '2-digit', month: '2-digit', year: 'numeric' }) : '';
+
+/* ===================== cálculo ===================== */
+function totales() {
+  let base = 0; const porTipo = new Map();
+  state.lines.forEach((l) => {
+    const imp = num(l.qty) * num(l.price); base += imp;
+    const r = num(l.tax); porTipo.set(r, (porTipo.get(r) || 0) + imp * r / 100);
+  });
+  const ret = base * num(state.ret) / 100;
+  const cuota = [...porTipo.values()].reduce((a, b) => a + b, 0);
+  return { base, porTipo, ret, cuota, total: base + cuota - ret };
+}
+function faltan() {
+  const f = [];
+  if (!state.issuer.name.trim()) f.push('tu nombre'); if (!state.issuer.nif.trim()) f.push('tu NIF');
+  if (!state.client.name.trim()) f.push('el nombre del cliente');
+  if (!state.lines.some((l) => l.desc.trim() && num(l.price))) f.push('al menos un concepto con precio');
+  return f;
+}
+
+/* ===================== formulario ===================== */
+function leer(k) { return k.split('.').reduce((o, p) => o[p], state); }
+function escribir(k, v) { const ps = k.split('.'); const last = ps.pop(); ps.reduce((o, p) => o[p], state)[last] = v; }
+
+function pintarFormulario() {
+  document.querySelectorAll('[data-k]').forEach((el) => { if (el.dataset.k !== 'preset') el.value = leer(el.dataset.k) ?? ''; });
+  const sel = $('#fPais'); sel.innerHTML = Object.entries(PRESETS).map(([k, p]) => `<option value="${k}">${esc(p.label)}</option>`).join(''); sel.value = state.preset;
+  $('#fRetLabel').textContent = P().retLabel; $('#pistaRet').hidden = state.preset !== 'ES';
+  $('#taxNombreCab').textContent = `importe sin ${P().tax}`;
+  $('#retLista').innerHTML = (state.preset === 'ES' ? [0, 7, 15] : [0, 10, 15]).map((v) => `<option value="${v}">`).join('');
+  $('#chkPagada').checked = !!state.paid;
+  $('#selPlantilla').value = state.template;
+  pintarLineas();
+}
+function pintarLineas() {
+  const box = $('#lineas'); const rates = P().rates;
+  box.innerHTML = `<div class="linea linea-cab" aria-hidden="true"><span>Concepto</span><span>Cant.</span><span>Precio</span><span>${esc(P().tax)} %</span><span></span></div>` +
+    state.lines.map((l, i) => `<div class="linea" data-i="${i}">
+      <input aria-label="Concepto" data-f="desc" value="${esc(l.desc)}" placeholder="${i === 0 ? 'Diseño de la web corporativa' : 'Concepto'}">
+      <input aria-label="Cantidad" data-f="qty" class="num" inputmode="decimal" value="${esc(l.qty)}">
+      <input aria-label="Precio unitario" data-f="price" class="num" inputmode="decimal" value="${esc(l.price)}" placeholder="0,00">
+      <input aria-label="${esc(P().tax)} en porcentaje" data-f="tax" class="num" inputmode="decimal" value="${esc(l.tax)}" list="ivaLista">
+      <button type="button" class="quitar" aria-label="Quitar línea" ${state.lines.length === 1 ? 'disabled' : ''}>×</button>
+    </div>`).join('') + `<datalist id="ivaLista">${rates.map((r) => `<option value="${r}">`).join('')}</datalist>`;
+}
+
+document.addEventListener('input', (e) => {
+  const el = e.target;
+  if (el.dataset.k) {
+    if (el.dataset.k === 'preset') { cambiarPreset(el.value); return; }
+    escribir(el.dataset.k, el.value);
+    if (el.dataset.k === 'date' && state.date) { state.due = masDias(state.date, 30); $('#fVence').value = state.due; }
+    if (el.dataset.k === 'serie') { state.number = siguienteNumero(state.serie); $('#fNum').value = state.number; }
+    if (el.dataset.k.startsWith('issuer.')) LS.set('tal_issuer', { ...state.issuer, logo: pro ? state.issuer.logo : '' });
+    if (el.dataset.k === 'client.name') autocompletarCliente(el.value);
+    render(); return;
+  }
+  if (el.dataset.f) { const row = el.closest('.linea'); state.lines[+row.dataset.i][el.dataset.f] = el.value; render(); }
+});
+document.addEventListener('click', (e) => {
+  const q = e.target.closest('.quitar'); if (q) { const i = +q.closest('.linea').dataset.i; state.lines.splice(i, 1); pintarLineas(); render(); return; }
+});
+$('#btnLinea').addEventListener('click', () => {
+  state.lines.push(linea()); pintarLineas(); const rows = document.querySelectorAll('#lineas .linea:not(.linea-cab)'); const last = rows[rows.length - 1];
+  last.classList.add('nueva'); last.querySelector('input').focus(); render();
+});
+$('#lineas').addEventListener('keydown', (e) => { if (e.key === 'Enter' && e.target.dataset.f) { e.preventDefault(); $('#btnLinea').click(); } });
+function cambiarPreset(k) {
+  const prev = P(); state.preset = k; const p = P();
+  state.lines.forEach((l) => { if (!prev.rates.includes(num(l.tax)) || num(l.tax) === prev.rates[0]) l.tax = p.rates[0]; });
+  state.ret = p.ret; pintarFormulario(); render();
+}
+$('#chkPagada').addEventListener('change', (e) => { state.paid = e.target.checked; render(true); });
+$('#selPlantilla').addEventListener('change', (e) => { state.template = e.target.value; render(); });
+$('#btnNueva').addEventListener('click', () => {
+  state.client = { name: '', nif: '', addr: '', email: '' }; state.lines = [linea()]; state.paid = false; intento = false;
+  state.date = hoy(); state.due = masDias(state.date, 30); state.number = siguienteNumero(state.serie);
+  pintarFormulario(); render(); $('#cNombre').focus();
+});
+
+/* ===================== la hoja ===================== */
+function htmlHoja(paraImprimir) {
+  const t = totales(), p = P(), s = state;
+  const hayExento = s.preset === 'ES' && s.lines.some((l) => num(l.tax) === 0 && (l.desc.trim() || num(l.price)));
+  $('#campoExento').hidden = !hayExento;
+  const numero = (s.serie ? s.serie + '-' : '') + (s.number || '');
+  const partes = (n, nif, addr, email, phone) => `<p class="nombre">${esc(n) || '<span class="vacio">Nombre</span>'}</p><p>${esc([nif && 'NIF ' + nif, addr, email, phone].filter(Boolean).join('\n'))}</p>`;
+  const filas = s.lines.map((l) => { const imp = num(l.qty) * num(l.price); return `<tr><td class="concepto">${esc(l.desc) || '<span class="vacio">Concepto</span>'}</td><td class="n">${esc(l.qty)}</td><td class="n">${fmt(num(l.price))}</td><td class="n">${fmtPct(num(l.tax))}</td><td class="n">${fmt(imp)}</td></tr>`; }).join('');
+  const tipos = [...t.porTipo.entries()].sort((a, b) => b[0] - a[0]).map(([r, c]) => `<div><span>${esc(p.tax)} ${fmtPct(r)}</span><span>${fmt(c)}</span></div>`).join('');
+  const retRow = num(s.ret) ? `<div><span>${esc(p.retLabel.replace(' (%)', ''))} ${fmtPct(num(s.ret))}</span><span>${t.ret > 0 ? '−' : ''}${fmt(t.ret)}</span></div>` : '';
+  const notas = [s.payment && `<div><h3>Forma de pago</h3><p>${esc(s.payment)}</p></div>`, s.notes && `<div><h3>Notas</h3><p>${esc(s.notes)}</p></div>`, hayExento && s.exemptReason && `<div><p>${esc(s.exemptReason)}</p></div>`].filter(Boolean).join('');
+  const logo = pro && s.issuer.logo ? `<img class="hoja-logo" src="${s.issuer.logo}" alt="">` : '';
+  const sello = s.paid ? `<div class="sello${paraImprimir ? '' : ' golpe'}">PAGADA<small>${esc(fmtFecha(hoy()))}</small></div>` : '';
+  const credito = pro ? '' : `<div class="hoja-credito">Hecho con Talonario · <a href="https://${esc(CONFIG.site)}">${esc(CONFIG.site)}</a></div>`;
+  return `<div class="hoja-cab"><div>${logo}<h2 class="hoja-titulo">FACTURA</h2><div class="hoja-num">${esc(numero)}</div></div>
+    <div class="hoja-fechas"><div><b>Fecha</b> ${esc(fmtFecha(s.date))}</div>${s.due ? `<div><b>Vencimiento</b> ${esc(fmtFecha(s.due))}</div>` : ''}</div></div>
+    <div class="hoja-partes"><div><h3>De</h3>${partes(s.issuer.name, s.issuer.nif, s.issuer.addr, s.issuer.email, s.issuer.phone)}</div><div><h3>Para</h3>${partes(s.client.name, s.client.nif, s.client.addr, s.client.email)}</div></div>
+    <table><thead><tr><th>Concepto</th><th class="n">Cant.</th><th class="n">Precio</th><th class="n">${esc(p.tax)}</th><th class="n">Importe</th></tr></thead><tbody>${filas}</tbody></table>
+    <div class="totales"><div><span>Base imponible</span><span>${fmt(t.base)}</span></div>${tipos}${retRow}<div class="total"><span>Total</span><span>${fmt(t.total)}</span></div></div>
+    <div class="hoja-pie">${notas}</div>${sello}${credito}`;
+}
+let intento = false;
+function render(conGolpe) {
+  const hoja = $('#hoja'); hoja.className = 'hoja' + (state.template === 'moderna' && pro ? ' moderna' : '');
+  const html = htmlHoja(false); hoja.innerHTML = html;
+  if (!conGolpe) { const st = hoja.querySelector('.sello'); if (st) st.classList.remove('golpe'); }
+  const t = totales(); $('#totalVivo').textContent = fmt(t.total); $('#totalVivoMovil').textContent = fmt(t.total);
+  const f = faltan(); const msg = f.length ? (intento ? 'Falta ' : 'Para descargar falta ') + f.join(', ') + '.' : '';
+  [$('#aviso'), $('#avisoMovil')].forEach((el) => { el.textContent = msg; el.classList.toggle('rojo', intento && f.length > 0); });
+  LS.set('tal_draft', { ...state, issuer: { ...state.issuer, logo: '' } });
+  escalar();
+}
+function escalar() {
+  const marco = $('#marco'), esc_ = $('#escala'), hoja = $('#hoja');
+  const k = Math.min(1, marco.clientWidth / hoja.offsetWidth);
+  esc_.style.transform = `scale(${k})`; marco.style.height = hoja.offsetHeight * k + 'px';
+}
+window.addEventListener('resize', escalar);
+
+/* ===================== PDF ===================== */
+function descargar() {
+  const f = faltan();
+  if (f.length) { intento = true; render(); (f[0].startsWith('tu') ? $('#iNombre') : f[0].includes('cliente') ? $('#cNombre') : document.querySelector('#lineas input')).focus(); return; }
+  const imp = $('#impresion'); imp.innerHTML = `<article class="hoja${state.template === 'moderna' && pro ? ' moderna' : ''}">${htmlHoja(true)}</article>`;
+  const seq = LS.get('tal_seq', {}); const n = parseInt(state.number, 10); if (n && n >= (seq[state.serie] || 0)) { seq[state.serie] = n; LS.set('tal_seq', seq); }
+  if (pro) { guardarCliente(); guardarHistorial(); }
+  $('#pistaPdf').hidden = false;
+  setTimeout(() => window.print(), 60);
+}
+$('#btnPdf').addEventListener('click', descargar); $('#btnPdfMovil').addEventListener('click', descargar);
+
+/* ===================== Pro: clientes, historial, logo ===================== */
+function clientes() { return LS.get('tal_clients', []); }
+function guardarCliente() {
+  const c = state.client; if (!c.name.trim()) return; const list = clientes();
+  const i = list.findIndex((x) => (x.nif && x.nif === c.nif) || x.name.toLowerCase() === c.name.toLowerCase());
+  if (i >= 0) list[i] = { ...c }; else list.unshift({ ...c }); LS.set('tal_clients', list.slice(0, 300)); pintarClientes();
+}
+function pintarClientes() {
+  if (!pro) return; const list = clientes();
+  $('#listaClientes').innerHTML = list.map((c) => `<option value="${esc(c.name)}">`).join('');
+  $('#clientesPista').textContent = list.length ? `${list.length} guardado${list.length === 1 ? '' : 's'}` : 'se guardan al descargar';
+}
+function autocompletarCliente(name) {
+  if (!pro) return; const c = clientes().find((x) => x.name.toLowerCase() === name.trim().toLowerCase()); if (!c) return;
+  state.client = { ...c }; ['cNif', 'cDir', 'cEmail'].forEach((id, k) => { $('#' + id).value = [c.nif, c.addr, c.email][k] || ''; });
+}
+function guardarHistorial() {
+  const h = LS.get('tal_history', []); const numero = (state.serie ? state.serie + '-' : '') + state.number;
+  const snap = { id: numero + '|' + state.date, numero, cliente: state.client.name, fecha: state.date, total: totales().total, moneda: P().currency, locale: P().locale, state: JSON.parse(JSON.stringify({ ...state, issuer: { ...state.issuer, logo: '' } })) };
+  const i = h.findIndex((x) => x.id === snap.id); if (i >= 0) h[i] = snap; else h.unshift(snap); LS.set('tal_history', h.slice(0, 300));
+}
+function pintarHistorial() {
+  const h = LS.get('tal_history', []); const box = $('#hist');
+  if (!h.length) { box.innerHTML = '<p class="hist-vacio">Aún no hay facturas. Aparecen aquí cuando descargas el PDF.</p>'; return; }
+  box.innerHTML = h.map((x, i) => `<div class="hist-fila"><div><b>${esc(x.numero)}</b> ${esc(x.cliente)}<small>${esc(fmtFechaLoc(x.fecha, x.locale))} · ${esc(new Intl.NumberFormat(x.locale, { style: 'currency', currency: x.moneda, useGrouping: 'always' }).format(x.total))}</small></div>
+    <div class="ops"><button type="button" class="btn btn-plano" data-h="abrir" data-i="${i}">Abrir</button><button type="button" class="btn btn-plano" data-h="dup" data-i="${i}">Duplicar</button><button type="button" class="btn btn-plano" data-h="borrar" data-i="${i}" aria-label="Borrar ${esc(x.numero)}">Borrar</button></div></div>`).join('');
+}
+const fmtFechaLoc = (iso, loc) => new Date(iso + 'T00:00:00').toLocaleDateString(loc || 'es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+$('#hist').addEventListener('click', (e) => {
+  const b = e.target.closest('[data-h]'); if (!b) return; const h = LS.get('tal_history', []); const x = h[+b.dataset.i]; if (!x) return;
+  if (b.dataset.h === 'borrar') { h.splice(+b.dataset.i, 1); LS.set('tal_history', h); pintarHistorial(); return; }
+  const logo = state.issuer.logo; Object.assign(state, JSON.parse(JSON.stringify(x.state))); state.issuer.logo = logo;
+  if (b.dataset.h === 'dup') { state.date = hoy(); state.due = masDias(state.date, 30); state.number = siguienteNumero(state.serie); state.paid = false; }
+  $('#dlgHist').close(); pintarFormulario(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
+});
+$('#btnHistorial').addEventListener('click', () => { pintarHistorial(); $('#dlgHist').showModal(); });
+$('#btnExportar').addEventListener('click', () => {
+  const blob = new Blob([JSON.stringify({ app: 'talonario', exportado: new Date().toISOString(), facturas: LS.get('tal_history', []), clientes: clientes() }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = 'talonario-facturas.json'; document.body.appendChild(a); a.click(); a.remove();
+});
+$('#iLogo').addEventListener('change', (e) => {
+  const f = e.target.files && e.target.files[0]; if (!f) return;
+  const img = new Image(); img.onload = () => {
+    const k = Math.min(1, 600 / Math.max(img.width, img.height)); const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+    c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); state.issuer.logo = c.toDataURL('image/png'); LS.set('tal_issuer', { ...state.issuer });
+    $('#btnQuitarLogo').hidden = false; render();
+  }; img.src = URL.createObjectURL(f);
+});
+$('#btnQuitarLogo').addEventListener('click', () => { state.issuer.logo = ''; LS.set('tal_issuer', { ...state.issuer }); $('#iLogo').value = ''; $('#btnQuitarLogo').hidden = true; render(); });
+
+/* ===================== Pro: compra y activación ===================== */
+function aplicarPro() {
+  const on = !!pro;
+  $('#btnPro').textContent = on ? 'Pro activo' : 'Pro · 19 €'; $('#btnHistorial').hidden = !on; $('#campoLogo').hidden = !on; $('#optPlantilla').hidden = !on;
+  $('#btnQuitarLogo').hidden = !(on && state.issuer.logo);
+  if (on) pintarClientes(); else { $('#listaClientes').innerHTML = ''; $('#clientesPista').textContent = ''; }
+  render();
+}
+function abrirPro() {
+  const a = $('#btnComprar'); const n = $('#comprarNota');
+  if (CONFIG.checkoutUrl) { a.href = CONFIG.checkoutUrl; a.removeAttribute('aria-disabled'); n.textContent = 'Pago seguro. Recibes la clave por correo.'; }
+  else { a.href = '#'; a.setAttribute('aria-disabled', 'true'); a.classList.add('btn-plano'); n.textContent = 'La compra se abre muy pronto.'; }
+  $('#estadoClave').textContent = ''; $('#estadoClave').className = 'estado'; $('#dlgPro').showModal();
+}
+$('#btnPro').addEventListener('click', () => { if (pro) { $('#btnHistorial').click(); } else abrirPro(); });
+$('#btnProPrecios').addEventListener('click', abrirPro);
+$('#btnComprar').addEventListener('click', (e) => { if (!CONFIG.checkoutUrl) e.preventDefault(); });
+async function validarClave(key) {
+  if (CONFIG.demoCode && key === CONFIG.demoCode) return { ok: true };
+  if (CONFIG.provider === 'gumroad') {
+    const body = new URLSearchParams({ product_id: CONFIG.productId, license_key: key, increment_uses_count: 'false' });
+    const r = await fetch('https://api.gumroad.com/v2/licenses/verify', { method: 'POST', body }); const j = await r.json().catch(() => ({}));
+    return j.success && !j.purchase?.refunded && !j.purchase?.chargebacked ? { ok: true } : { ok: false, msg: j.message || 'La clave no es válida.' };
+  }
+  const body = new URLSearchParams({ license_key: key }); if (CONFIG.productId) body.set('instance_name', 'talonario-web');
+  const r = await fetch('https://api.lemonsqueezy.com/v1/licenses/validate', { method: 'POST', headers: { Accept: 'application/json' }, body }); const j = await r.json().catch(() => ({}));
+  if (!j.valid) return { ok: false, msg: j.error || 'La clave no es válida.' };
+  if (CONFIG.productId && String(j.meta?.product_id) !== String(CONFIG.productId)) return { ok: false, msg: 'Esa clave es de otro producto.' };
+  if (j.license_key?.status === 'disabled' || j.license_key?.status === 'expired') return { ok: false, msg: 'Esa clave está desactivada.' };
+  return { ok: true };
+}
+$('#btnActivar').addEventListener('click', async () => {
+  const key = $('#inClave').value.trim(); const st = $('#estadoClave'); if (!key) { st.className = 'estado mal'; st.textContent = 'Pega la clave que recibiste por correo.'; return; }
+  st.className = 'estado'; st.textContent = 'Comprobando…';
+  try {
+    const r = await validarClave(key);
+    if (r.ok) { pro = { key, at: Date.now() }; LS.set('tal_pro', pro); st.className = 'estado ok'; st.textContent = 'Pro activado. Gracias.'; aplicarPro(); setTimeout(() => $('#dlgPro').close(), 900); }
+    else { st.className = 'estado mal'; st.textContent = r.msg; }
+  } catch (_) { st.className = 'estado mal'; st.textContent = 'No se pudo comprobar la clave. Revisa tu conexión e inténtalo otra vez.'; }
+});
+
+/* ===================== arranque ===================== */
+pintarFormulario(); aplicarPro();
+document.fonts && document.fonts.ready.then(escalar);
+</script>
+</body>
+</html>
