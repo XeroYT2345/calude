@@ -4,58 +4,119 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Webs y herramientas para negocios | TU NOMBRE</title>
-<meta name="description" content="Creo la web, la carta con QR o la calculadora que tu negocio necesita. Rápido, sin cuotas mensuales y listo en pocos días.">
+<meta name="description" content="Creo la web, la carta con QR o la calculadora que tu negocio necesita. Precio cerrado, sin cuotas mensuales y listo en pocos días.">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%277%27 fill=%27%230f766e%27/%3E%3Cpath d=%27M6 16l10-8 10 8v9H6z%27 fill=%27%23fff%27/%3E%3C/svg%3E">
 <style>
-:root{--bg:#f6f8f7;--card:#fff;--ink:#14231f;--muted:#5b6b66;--line:#dbe4e0;--accent:#0f766e;--accent-ink:#fff}
-@media (prefers-color-scheme:dark){:root{--bg:#0e1614;--card:#15211e;--ink:#e8f0ed;--muted:#9bb0aa;--line:#26372f;--accent:#2dd4bf;--accent-ink:#06201b}}
-*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
-main,header,footer{max-width:900px;margin:0 auto;padding:0 16px}
-header{display:flex;justify-content:space-between;align-items:center;padding-top:14px;padding-bottom:14px}
+:root{--bg:#f6f8f7;--card:#fff;--ink:#14231f;--muted:#566762;--line:#dbe4e0;--accent:#0f766e;--accent-ink:#fff;--soft:#e3f3f0;--wa:#16a34a}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1614;--card:#15211e;--ink:#e8f0ed;--muted:#9bb0aa;--line:#26372f;--accent:#2dd4bf;--accent-ink:#06201b;--soft:#12302b;--wa:#22c55e}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+.wrap{max-width:960px;margin:0 auto;padding:0 16px}
+header .wrap{display:flex;justify-content:space-between;align-items:center;padding-top:14px;padding-bottom:14px}
 .brand{font-weight:800;font-size:1.15rem}.brand span{color:var(--accent)}
-h1{font-size:clamp(1.8rem,5.5vw,2.8rem);line-height:1.12;margin:.3em 0}
-h2{font-size:1.45rem;margin:1.8em 0 .5em}
-.lead{font-size:1.15rem;color:var(--muted);max-width:60ch}
-.btn{display:inline-block;font-weight:700;text-decoration:none;padding:13px 20px;border-radius:12px;background:var(--accent);color:var(--accent-ink);margin:6px 8px 6px 0}
+.hero{padding:28px 0 20px}
+.eyebrow{display:inline-block;background:var(--soft);color:var(--accent);font-weight:700;font-size:.85rem;padding:4px 12px;border-radius:99px}
+h1{font-size:clamp(2rem,6vw,3.1rem);line-height:1.08;margin:.45em 0 .35em;letter-spacing:-.02em}
+h2{font-size:clamp(1.4rem,3.5vw,1.8rem);margin:0 0 .6em;letter-spacing:-.01em}
+section{padding:30px 0}
+.lead{font-size:1.15rem;color:var(--muted);max-width:58ch}
+.btn{display:inline-block;font:inherit;font-weight:700;text-decoration:none;padding:14px 22px;border-radius:12px;background:var(--accent);color:var(--accent-ink);margin:6px 8px 6px 0}
 .btn.ghost{background:transparent;color:var(--accent);border:1.5px solid var(--accent)}
-.grid{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
-.card{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
-.card h3{margin:.1em 0 .3em}.price{font-size:1.5rem;font-weight:800;color:var(--accent)}.price small{font-size:.55em;color:var(--muted);font-weight:600}
-.card ul{padding-left:1.1em;margin:.5em 0 0;color:var(--muted)}
-ol{padding-left:1.2em}li{margin:.3em 0}
+.btn.wa{background:var(--wa);color:#fff}
+.checks{list-style:none;padding:0;margin:18px 0 0;display:flex;flex-wrap:wrap;gap:8px 18px;color:var(--muted);font-weight:600}
+.checks li::before{content:"✓ ";color:var(--accent);font-weight:800}
+.grid{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(250px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:20px;position:relative}
+.card.pop{border:2px solid var(--accent)}
+.badge{position:absolute;top:-12px;left:18px;background:var(--accent);color:var(--accent-ink);font-size:.78rem;font-weight:800;padding:2px 12px;border-radius:99px}
+.card h3{margin:.1em 0 .2em;font-size:1.15rem}
+.price{font-size:1.8rem;font-weight:800;color:var(--accent);line-height:1.1}.price small{font-size:.5em;color:var(--muted);font-weight:600}
+.card ul{padding-left:1.1em;margin:.8em 0 0;color:var(--muted)}
+.tiles{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
+.tile{background:var(--soft);border-radius:12px;padding:14px;font-weight:700}
+.tile small{display:block;font-weight:500;color:var(--muted)}
+.steps{display:grid;gap:14px;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));counter-reset:s}
+.step{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px 18px 18px 64px;position:relative}
+.step::before{counter-increment:s;content:counter(s);position:absolute;left:16px;top:16px;width:34px;height:34px;border-radius:50%;background:var(--accent);color:var(--accent-ink);display:grid;place-items:center;font-weight:800}
+.step b{display:block}.step span{color:var(--muted)}
 .note{color:var(--muted);font-size:.9rem}
-footer{padding-top:24px;padding-bottom:40px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:32px}
+details{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 16px;margin:8px 0}
+summary{cursor:pointer;font-weight:700}details p{margin:.5em 0 0;color:var(--muted)}
+.cta{background:var(--soft);border-radius:20px;padding:28px 20px;text-align:center}
+.cta p{color:var(--muted);margin:.3em 0 1em}
+footer{padding:26px 0 90px;color:var(--muted);font-size:.9rem;border-top:1px solid var(--line);margin-top:20px}
+.float{position:fixed;right:14px;bottom:14px;z-index:5;background:var(--wa);color:#fff;font-weight:800;text-decoration:none;padding:13px 18px;border-radius:99px;box-shadow:0 6px 18px rgba(0,0,0,.25)}
+a:focus-visible,summary:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 </style>
 </head>
 <body>
-<header><div class="brand">TU<span>NOMBRE</span></div><a class="btn ghost" href="#contacto">Contactar</a></header>
-<main>
-  <h1>La web o herramienta que tu negocio necesita, lista en pocos días</h1>
-  <p class="lead">Ayudo a negocios de <strong>TU CIUDAD</strong> a tener presencia online sin complicaciones: sin cuotas mensuales, sin letra pequeña y con un precio cerrado desde el principio.</p>
-  <a class="btn" href="#contacto">Pídeme presupuesto gratis</a><a class="btn ghost" href="#servicios">Ver servicios</a>
-
-  <h2 id="servicios">Qué puedo hacer por ti</h2>
-  <div class="grid">
-    <div class="card"><h3>Carta digital con QR</h3><div class="price">desde 60 € <small>pago único</small></div><ul><li>Tu carta en el móvil del cliente</li><li>QR listo para imprimir</li><li>La actualizas cuando quieras</li></ul></div>
-    <div class="card"><h3>Web de una página</h3><div class="price">desde 150 € <small>pago único</small></div><ul><li>Horarios, ubicación, servicios y contacto</li><li>Botón de WhatsApp</li><li>Se ve bien en móvil</li></ul></div>
-    <div class="card"><h3>Calculadora o herramienta a medida</h3><div class="price">desde 200 € <small>pago único</small></div><ul><li>Presupuestos, cuotas, conversores…</li><li>Atrae clientes desde Google</li><li>Sin servidores ni cuotas</li></ul></div>
+<header><div class="wrap"><div class="brand">TU<span>NOMBRE</span></div><a class="btn ghost" href="#contacto" style="margin:0">Contactar</a></div></header>
+<main class="wrap">
+  <div class="hero">
+    <span class="eyebrow">Para negocios de TU CIUDAD</span>
+    <h1>Tu negocio en internet, sin cuotas y en pocos días</h1>
+    <p class="lead">Hago la web, la carta con QR o la herramienta que te falta. Te doy un <strong>precio cerrado</strong> antes de empezar y te enseño un borrador antes de que pagues nada.</p>
+    <a class="btn wa" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20un%20presupuesto">Pedir presupuesto por WhatsApp</a><a class="btn ghost" href="#servicios">Ver servicios y precios</a>
+    <ul class="checks"><li>Pago único</li><li>Sin mensualidades</li><li>Borrador gratis</li><li>Se ve bien en el móvil</li></ul>
   </div>
-  <p class="note">Los precios son orientativos. Tras contarme tu caso te doy un precio cerrado.</p>
 
-  <h2>Un ejemplo real</h2>
-  <p>Así de clara queda una herramienta a medida: una <a href="https://claude.ai/artifact/T9qFDWqPQk3x8oEpUtbQft">calculadora de hipoteca</a> que calcula la cuota, los intereses y compara escenarios. Te hago algo así para lo que tu cliente necesite calcular.</p>
+  <section id="servicios">
+    <h2>Qué puedo hacer por ti</h2>
+    <div class="grid">
+      <div class="card"><h3>Carta digital con QR</h3><div class="price">desde 60 € <small>pago único</small></div><ul><li>Tu carta en el móvil del cliente</li><li>QR listo para imprimir</li><li>Cambios de precios fáciles</li></ul></div>
+      <div class="card pop"><span class="badge">Más pedido</span><h3>Web de una página</h3><div class="price">desde 150 € <small>pago único</small></div><ul><li>Horarios, ubicación, servicios y contacto</li><li>Botón de WhatsApp y de llamada</li><li>Aparece en Google con tu nombre</li></ul></div>
+      <div class="card"><h3>Herramienta a medida</h3><div class="price">desde 200 € <small>pago único</small></div><ul><li>Calculadora de presupuestos, cuotas…</li><li>Atrae clientes desde Google</li><li>Sin servidores ni cuotas</li></ul></div>
+    </div>
+    <p class="note">Precios orientativos. Tras contarme tu caso te doy un precio cerrado.</p>
+  </section>
 
-  <h2>Cómo trabajo</h2>
-  <ol><li><strong>Me cuentas</strong> qué necesitas (5 minutos por WhatsApp).</li><li><strong>Te enseño</strong> un borrador y te doy un precio cerrado.</li><li><strong>Lo ajusto</strong> y te lo entrego listo para usar.</li></ol>
+  <section>
+    <h2>¿Para quién es?</h2>
+    <div class="tiles">
+      <div class="tile">Bares y restaurantes<small>carta con QR</small></div>
+      <div class="tile">Peluquerías y estética<small>web con horarios y citas</small></div>
+      <div class="tile">Talleres y reformas<small>calculadora de presupuesto</small></div>
+      <div class="tile">Clínicas y gestorías<small>web clara y de confianza</small></div>
+      <div class="tile">Tiendas locales<small>escaparate en internet</small></div>
+    </div>
+  </section>
 
-  <h2 id="contacto">Contacto</h2>
-  <p>Cuéntame tu negocio y te respondo hoy.</p>
-  <!-- TODO: sustituir 34600000000 por tu teléfono con prefijo, sin + ni espacios -->
-  <a class="btn" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20un%20presupuesto">Escribir por WhatsApp</a>
-  <!-- TODO: sustituir por tu email -->
-  <a class="btn ghost" href="mailto:TU-EMAIL@ejemplo.com">Enviar un email</a>
+  <section>
+    <h2>Un ejemplo de herramienta a medida</h2>
+    <p>Así queda una calculadora que atrae visitas: una <a href="https://claude.ai/artifact/T9qFDWqPQk3x8oEpUtbQft">calculadora de hipoteca</a> con cuota, intereses y comparador de escenarios. Te hago algo así para lo que tus clientes necesiten calcular.</p>
+  </section>
+
+  <section>
+    <h2>Cómo trabajo</h2>
+    <div class="steps">
+      <div class="step"><b>Me cuentas</b><span>Qué necesitas, en 5 minutos por WhatsApp.</span></div>
+      <div class="step"><b>Ves un borrador</b><span>Y un precio cerrado. Si no te convence, no pagas.</span></div>
+      <div class="step"><b>Ajusto y entrego</b><span>Listo para usar, con explicación de cómo cambiar cosas.</span></div>
+    </div>
+  </section>
+
+  <section>
+    <h2>Preguntas frecuentes</h2>
+    <details><summary>¿Hay que pagar mensualidades?</summary><p>No. Pagas una vez. Si más adelante quieres un dominio propio (unos 10 € al año), te ayudo a ponerlo, pero es opcional.</p></details>
+    <details><summary>¿Cuánto tardas?</summary><p>Una carta con QR, en 1-2 días. Una web de una página, en 3-5 días, según lo rápido que me pases fotos y textos.</p></details>
+    <details><summary>¿Puedo cambiar cosas después?</summary><p>Sí. Te enseño a cambiar textos y precios tú mismo, o me lo pides y lo hago por un precio pequeño.</p></details>
+    <details><summary>¿Cómo se paga?</summary><p>La mitad al empezar y la mitad al entregar, por Bizum o transferencia.</p></details>
+    <details><summary>¿Y si no me gusta el borrador?</summary><p>No pasa nada: el borrador es gratis y sin compromiso.</p></details>
+  </section>
+
+  <section id="contacto">
+    <div class="cta">
+      <h2>Cuéntame tu negocio</h2>
+      <p>Te respondo hoy con una idea y un precio.</p>
+      <!-- TODO: sustituir 34600000000 por tu teléfono con prefijo, sin + ni espacios -->
+      <a class="btn wa" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20un%20presupuesto">Escribir por WhatsApp</a>
+      <!-- TODO: sustituir por tu email -->
+      <a class="btn ghost" href="mailto:TU-EMAIL@ejemplo.com">Enviar un email</a>
+    </div>
+  </section>
 </main>
-<footer>© <span id="y">2026</span> TU NOMBRE · TU CIUDAD</footer>
+<footer><div class="wrap">© <span id="y">2026</span> TU NOMBRE · TU CIUDAD</div></footer>
+<a class="float" href="https://wa.me/34600000000?text=Hola%2C%20quiero%20un%20presupuesto" aria-label="Escribir por WhatsApp">WhatsApp</a>
 <script>try{document.getElementById("y").textContent=new Date().getFullYear()}catch(e){}</script>
 </body>
 </html>
