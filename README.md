@@ -25,3 +25,15 @@ Capa de monetización para aniradar.net. Un solo archivo, sin dependencias, cost
 - Los enlaces llevan `rel="sponsored nofollow"` y un aviso de afiliados visible.
 - Si el anuncio no se rellena, el hueco se oculta solo.
 - En la UE/Reino Unido AdSense exige un banner de consentimiento (CMP) certificado.
+
+---
+
+# que-anime-ver.html · «¿Qué anime ver hoy?»
+
+Página independiente (un solo archivo, sin servidor ni claves): test de 3 preguntas que recomienda anime con la API pública de AniList.
+Sube el archivo junto a tu `index.html` y quedará en `aniradar.net/que-anime-ver.html`. Enlázalo desde el pie de AniRadar.
+
+- Cada recomendación tiene botón «Dónde verlo» hacia tu AniRadar (tráfico para tu web) y, si pones tu ID, «Manga» con afiliado de Amazon.
+- El resultado se puede compartir (enlace con las respuestas) → tráfico gratis desde redes.
+- Si AniList no responde, muestra una selección de respaldo.
+- Rellena `CFG` al principio del `<script>`: `amazonTag` (afiliado) y `adSlot` (anuncio AdSense). Vacío = no se muestra.

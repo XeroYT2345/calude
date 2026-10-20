@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>¿Qué anime ver hoy? Test de 3 preguntas · AniRadar</title>
+<meta name="description" content="Contesta 3 preguntas y te recomendamos qué anime ver según tu estado de ánimo, cuánto tiempo tienes y si prefieres un clásico o una joya oculta. Gratis y sin registro.">
+<link rel="canonical" href="https://aniradar.net/que-anime-ver.html">
+<meta name="google-adsense-account" content="ca-pub-7212697940074599">
+<style>
+:root{--bg:#07070A;--panel:#101118;--line:rgba(255,255,255,.1);--acc:#FF5500;--mut:#a1a1aa}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg) radial-gradient(circle at 50% 0,rgba(255,85,0,.12),transparent 60%);color:#fafafa;font:15px/1.5 Inter,system-ui,sans-serif}
+a{color:inherit}
+header{display:flex;align-items:center;justify-content:space-between;padding:14px 20px;border-bottom:1px solid var(--line)}
+header a{font-weight:800;font-size:19px;text-decoration:none}header b{color:var(--acc)}
+main{max-width:860px;margin:0 auto;padding:26px 16px 60px}
+h1{font-size:clamp(26px,5vw,38px);line-height:1.15;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--mut);margin:0 0 22px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px}
+.q{margin-bottom:18px}.q h2{font-size:14px;margin:0 0 9px;color:#e4e4e7;font-weight:700}
+.opts{display:flex;flex-wrap:wrap;gap:8px}
+.opts button{background:#161822;border:1px solid var(--line);color:#f4f4f5;border-radius:12px;padding:9px 14px;font:600 13px inherit;cursor:pointer;transition:.15s}
+.opts button:hover{border-color:rgba(255,255,255,.3)}
+.opts button[aria-pressed=true]{background:rgba(255,85,0,.2);border-color:var(--acc)}
+.go{width:100%;background:var(--acc);color:#fff;border:0;border-radius:14px;padding:13px;font:800 15px inherit;cursor:pointer}
+.go:disabled{opacity:.4;cursor:default}
+.ad{max-width:728px;margin:22px auto;min-height:100px}.ad small{display:block;text-align:center;color:#52525b;font:500 9px monospace;letter-spacing:.14em;text-transform:uppercase;margin-bottom:6px}
+#res{margin-top:24px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.a{display:flex;gap:12px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:10px}
+.a img{width:84px;height:122px;object-fit:cover;border-radius:10px;flex:none;background:#181a24}
+.a h3{margin:0 0 3px;font-size:14px;line-height:1.25}
+.meta{font:11px monospace;color:var(--mut)}
+.sc{color:#fbbf24;font-weight:700}
+.btns{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.btns a{font:700 11px inherit;text-decoration:none;border:1px solid var(--line);background:#161822;border-radius:9px;padding:6px 9px}
+.btns a.p{background:var(--acc);border-color:var(--acc)}
+.row{display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+.row button{background:#161822;border:1px solid var(--line);color:#f4f4f5;border-radius:11px;padding:9px 14px;font:700 12px inherit;cursor:pointer}
+.note{color:#71717a;font:11px monospace;margin-top:14px}
+footer{text-align:center;color:#71717a;font:11px monospace;padding:20px}
+.seo{color:var(--mut);margin-top:34px;font-size:13px}.seo h2{color:#e4e4e7;font-size:15px}
+</style>
+</head>
+<body>
+<header><a href="https://aniradar.net/">Ani<b>Radar</b></a><a href="https://aniradar.net/" style="font-size:12px;color:var(--mut)">Identificar un anime →</a></header>
+<main>
+<h1>¿Qué anime ver hoy?</h1>
+<p class="sub">Tres preguntas y te damos 6 recomendaciones. Sin registro.</p>
+
+<section class="card" aria-label="Test">
+ <div class="q"><h2>1 · ¿Qué te apetece sentir?</h2><div class="opts" data-k="m">
+  <button data-v="Action">Acción</button><button data-v="Comedy">Reírme</button><button data-v="Drama">Emocionarme</button>
+  <button data-v="Mystery,Thriller,Psychological">Misterio</button><button data-v="Fantasy,Adventure">Aventura y fantasía</button>
+  <button data-v="Romance">Romance</button><button data-v="Horror">Terror</button><button data-v="Sports">Deportes</button></div></div>
+ <div class="q"><h2>2 · ¿Cuánto tiempo tienes?</h2><div class="opts" data-k="l">
+  <button data-v="movie">Una película</button><button data-v="short">Serie corta (hasta 13 ep.)</button>
+  <button data-v="mid">Media (14–26 ep.)</button><button data-v="long">Larga (más de 26 ep.)</button></div></div>
+ <div class="q"><h2>3 · ¿Qué prefieres?</h2><div class="opts" data-k="s">
+  <button data-v="pop">Lo que todos ven</button><button data-v="gem">Una joya poco conocida</button></div></div>
+ <button class="go" id="go" disabled>Recomiéndame</button>
+</section>
+
+<aside class="ad" id="ad1"><small>Publicidad</small></aside>
+<section id="res" aria-live="polite"></section>
+
+<section class="seo">
+ <h2>Cómo elegir un anime cuando no sabes cuál ver</h2>
+ <p>Elegir anime es difícil porque hay miles de series. Este test filtra por género, duración y popularidad usando las valoraciones de AniList. Para cada recomendación puedes ver en AniRadar dónde verla legalmente en tu país. Si lo que buscas es un anime que ya viste pero no recuerdas el nombre, prueba el identificador por captura de pantalla.</p>
+</section>
+</main>
+<footer>Datos de AniList · <a href="https://aniradar.net/">AniRadar</a></footer>
+
+<script>
+/* ===== CONFIGURACIÓN (opcional) ===== */
+var CFG = {
+  amazonDomain: 'amazon.es',   // tienda de Amazon para el enlace de manga
+  amazonTag: '',               // tu ID de afiliado (p. ej. 'aniradar-21'); vacío = no se muestra el botón
+  adClient: 'ca-pub-7212697940074599',
+  adSlot: ''                   // ID del bloque de anuncios; vacío = sin anuncio
+};
+
+/* Respaldo si AniList no responde (para que la página nunca quede vacía) */
+var FALLBACK = [
+ {id:154587,t:'Sousou no Frieren',s:91,e:28,g:['Adventure','Drama','Fantasy'],c:'https://cdn.myanimelist.net/images/anime/1015/138006l.jpg'},
+ {id:116674,t:'Bleach: Thousand-Year Blood War',s:89,e:13,g:['Action','Adventure','Supernatural'],c:'https://cdn.myanimelist.net/images/anime/1908/135431l.jpg'},
+ {id:145064,t:'Jujutsu Kaisen 2nd Season',s:87,e:23,g:['Action','Fantasy','Supernatural'],c:'https://cdn.myanimelist.net/images/anime/1792/138022l.jpg'},
+ {id:171018,t:'Dandadan',s:84,e:12,g:['Action','Comedy','Supernatural'],c:'https://cdn.myanimelist.net/images/anime/1584/143719l.jpg'},
+ {id:127230,t:'Chainsaw Man',s:85,e:12,g:['Action','Fantasy','Horror'],c:'https://cdn.myanimelist.net/images/anime/1806/126216l.jpg'},
+ {id:151807,t:'Solo Leveling',s:83,e:12,g:['Action','Adventure','Fantasy'],c:'https://cdn.myanimelist.net/images/anime/1926/140792l.jpg'}
+];
+
+var $ = function (s) { return document.querySelector(s); };
+var esc = function (s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); };
+var sel = {};
+var GENRE_ES = {Action:'Acción',Adventure:'Aventura',Comedy:'Comedia',Drama:'Drama',Fantasy:'Fantasía',Horror:'Terror',Mystery:'Misterio',Psychological:'Psicológico',Romance:'Romance','Sci-Fi':'Sci-Fi','Slice of Life':'Vida cotidiana',Sports:'Deportes',Supernatural:'Sobrenatural',Thriller:'Suspense'};
+
+document.querySelectorAll('.opts').forEach(function (box) {
+  box.addEventListener('click', function (e) {
+    var b = e.target.closest('button'); if (!b) return;
+    box.querySelectorAll('button').forEach(function (x) { x.setAttribute('aria-pressed', 'false'); });
+    b.setAttribute('aria-pressed', 'true'); sel[box.dataset.k] = b.dataset.v;
+    $('#go').disabled = !(sel.m && sel.l && sel.s);
+  });
+});
+
+function query(s) {
+  var v = { g: s.m.split(',') }, decl = ['$g:[String]'], args = ['type:ANIME', 'isAdult:false', 'genre_in:$g'];
+  if (s.l === 'movie') { args.push('format:MOVIE'); }
+  else {
+    args.push('format_in:[TV,ONA]');
+    if (s.l === 'short') { decl.push('$b:Int'); args.push('episodes_lesser:$b'); v.b = 14; }
+    if (s.l === 'mid') { decl.push('$a:Int', '$b:Int'); args.push('episodes_greater:$a', 'episodes_lesser:$b'); v.a = 13; v.b = 27; }
+    if (s.l === 'long') { decl.push('$a:Int'); args.push('episodes_greater:$a'); v.a = 26; }
+  }
+  if (s.s === 'gem') { args.push('averageScore_greater:74', 'popularity_lesser:70000', 'popularity_greater:8000', 'sort:SCORE_DESC'); }
+  else { args.push('averageScore_greater:70', 'sort:POPULARITY_DESC'); }
+  return { q: 'query(' + decl.join(',') + '){Page(perPage:30){media(' + args.join(',') + '){id title{romaji english} averageScore episodes genres coverImage{large}}}}', v: v };
+}
+
+function pick(list, n) { // 6 al azar entre los mejores, para que cada vez salgan cosas distintas
+  var pool = list.slice(0, 14), out = [];
+  while (out.length < n && pool.length) out.push(pool.splice(Math.floor(Math.random() * pool.length), 1)[0]);
+  return out;
+}
+
+function card(a) {
+  var url = 'https://aniradar.net/#/a/' + a.id;
+  var am = CFG.amazonTag ? '<a href="https://www.' + CFG.amazonDomain + '/s?k=' + encodeURIComponent(a.t + ' manga') + '&tag=' + encodeURIComponent(CFG.amazonTag) + '" target="_blank" rel="sponsored nofollow noopener">Manga</a>' : '';
+  return '<article class="a"><img loading="lazy" src="' + esc(a.c) + '" alt="' + esc(a.t) + '" referrerpolicy="no-referrer">' +
+    '<div><h3>' + esc(a.t) + '</h3><div class="meta">' + (a.s ? '<span class="sc">★ ' + (a.s / 10).toFixed(1) + '</span> · ' : '') + (a.e ? a.e + ' ep. · ' : '') + esc(a.g.slice(0, 2).map(function (g) { return GENRE_ES[g] || g; }).join(' · ')) + '</div>' +
+    '<div class="btns"><a class="p" href="' + url + '" target="_blank" rel="noopener">Dónde verlo</a>' + am + '</div></div></article>';
+}
+
+function show(items, offline) {
+  var html = '<div class="grid">' + items.map(card).join('') + '</div>' +
+    '<div class="row"><button id="again">Otras recomendaciones</button><button id="share">Compartir resultado</button></div>' +
+    (CFG.amazonTag ? '<p class="note">Enlaces de afiliado: si compras, AniRadar recibe una pequeña comisión sin coste extra para ti.</p>' : '') +
+    (offline ? '<p class="note">Mostrando una selección de respaldo (sin conexión con AniList).</p>' : '');
+  $('#res').innerHTML = html;
+  $('#again').onclick = run;
+  $('#share').onclick = function () {
+    var u = location.href.split('#')[0] + '#' + new URLSearchParams(sel).toString();
+    if (navigator.share) navigator.share({ title: '¿Qué anime ver hoy?', url: u }).catch(function () {});
+    else if (navigator.clipboard) navigator.clipboard.writeText(u).then(function () { $('#share').textContent = '¡Enlace copiado!'; });
+  };
+  $('#res').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function run() {
+  $('#res').innerHTML = '<p class="sub">Buscando…</p>';
+  var q = query(sel), ctl = new AbortController(), tm = setTimeout(function () { ctl.abort(); }, 9000);
+  fetch('https://graphql.anilist.co', { method: 'POST', signal: ctl.signal, headers: { 'Content-Type': 'application/json', Accept: 'application/json' }, body: JSON.stringify({ query: q.q, variables: q.v }) })
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(function (d) {
+      var list = d.data.Page.media.map(function (m) { return { id: m.id, t: m.title.english || m.title.romaji, s: m.averageScore, e: m.episodes, g: m.genres, c: m.coverImage.large }; });
+      if (!list.length) { $('#res').innerHTML = '<p class="sub">No hay resultados con esa combinación. Prueba con otra duración.</p>'; return; }
+      show(pick(list, 6), false);
+    })
+    .catch(function () {
+      var want = sel.m.split(','), fit = FALLBACK.filter(function (f) { return f.g.some(function (g) { return want.indexOf(g) >= 0; }); });
+      var rest = FALLBACK.filter(function (f) { return fit.indexOf(f) < 0; });
+      show(pick(fit.concat(rest), 6), true);
+    })
+    .then(function () { clearTimeout(tm); });
+}
+$('#go').onclick = run;
+
+/* Resultado compartido: #m=Action&l=short&s=pop */
+(function () {
+  var p = new URLSearchParams(location.hash.slice(1));
+  if (p.get('m') && p.get('l') && p.get('s')) {
+    sel = { m: p.get('m'), l: p.get('l'), s: p.get('s') };
+    document.querySelectorAll('.opts').forEach(function (box) { box.querySelectorAll('button').forEach(function (b) { b.setAttribute('aria-pressed', b.dataset.v === sel[box.dataset.k] ? 'true' : 'false'); }); });
+    $('#go').disabled = false; run();
+  }
+})();
+
+/* Anuncio (solo si hay slot) */
+if (CFG.adSlot) {
+  var sc = document.createElement('script'); sc.async = true; sc.crossOrigin = 'anonymous';
+  sc.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=' + CFG.adClient; document.head.appendChild(sc);
+  var ins = document.createElement('ins'); ins.className = 'adsbygoogle'; ins.style.display = 'block';
+  ins.setAttribute('data-ad-client', CFG.adClient); ins.setAttribute('data-ad-slot', CFG.adSlot); ins.setAttribute('data-ad-format', 'auto'); ins.setAttribute('data-full-width-responsive', 'true');
+  $('#ad1').appendChild(ins); (window.adsbygoogle = window.adsbygoogle || []).push({});
+} else { $('#ad1').style.display = 'none'; }
+</script>
+</body>
+</html>
