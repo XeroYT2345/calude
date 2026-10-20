@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>AniRadar · vídeos TikTok</title>
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script>
+/* Generador de vídeos verticales 1080×1920 para TikTok / Reels / Shorts.
+   Todo se dibuja con formas y texto propios: sin imágenes, clips ni música de terceros (cero riesgo de copyright).
+   Zona segura de TikTok respetada: nada importante por encima de y=180, por debajo de y=1500 ni a la derecha de x=950. */
+const W = 1080, H = 1920, C = document.getElementById('c'), X = C.getContext('2d');
+const ACC = '#FF5500', BG = '#07070A', PANEL = '#101118', PANEL2 = '#161822', LINE = 'rgba(255,255,255,.12)', MUT = '#a1a1aa', OK = '#34D399', GOLD = '#FBBF24';
+const MONO = '"DejaVu Sans Mono", monospace';
+
+const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
+const P = (t, a, b) => cl((t - a) / (b - a));
+const eo = (x) => 1 - Math.pow(1 - x, 3);
+const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(x - 1, 3) + c1 * Math.pow(x - 1, 2); };
+
+function font(size, w = 800, fam = 'Inter') { X.font = `${w} ${size}px ${fam}`; }
+function txt(s, x, y, o = {}) {
+  X.save(); X.globalAlpha *= (o.a ?? 1); font(o.size || 60, o.w || 800, o.fam || 'Inter');
+  X.fillStyle = o.c || '#fff'; X.textAlign = o.align || 'center'; X.textBaseline = 'alphabetic'; X.fillText(s, x, y); X.restore();
+}
+function wrap(s, maxW, size, w = 800) {
+  font(size, w); const out = []; let l = '';
+  s.split(' ').forEach((wd) => { const t = l ? l + ' ' + wd : wd; if (X.measureText(t).width > maxW && l) { out.push(l); l = wd; } else l = t; });
+  if (l) out.push(l); return out;
+}
+function rr(x, y, w, h, r, fill, stroke, lw = 3) {
+  X.beginPath(); X.roundRect(x, y, w, h, r);
+  if (fill) { X.fillStyle = fill; X.fill(); }
+  if (stroke) { X.lineWidth = lw; X.strokeStyle = stroke; X.stroke(); }
+}
+// Línea con palabras de distinto color, centrada y con escala (para los ganchos)
+function rich(segs, cx, y, size, alpha = 1, scale = 1) {
+  font(size, 900); const w = segs.reduce((s, [t]) => s + X.measureText(t).width, 0);
+  X.save(); X.globalAlpha *= alpha; X.translate(cx, y); X.scale(scale, scale); X.textAlign = 'left'; X.textBaseline = 'alphabetic';
+  let x = -w / 2; segs.forEach(([t, c]) => { X.fillStyle = c || '#fff'; X.fillText(t, x, 0); x += X.measureText(t).width; });
+  X.restore();
+}
+function blob(x, y, r, c) { const g = X.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, 'rgba(0,0,0,0)'); X.fillStyle = g; X.fillRect(0, 0, W, H); }
+function bg(t) {
+  X.fillStyle = BG; X.fillRect(0, 0, W, H);
+  blob(220 + 140 * Math.sin(t * 0.4), 360 + 90 * Math.cos(t * 0.3), 950, 'rgba(255,85,0,.22)');
+  blob(880 + 110 * Math.cos(t * 0.35), 1450 + 130 * Math.sin(t * 0.25), 900, 'rgba(124,58,237,.17)');
+}
+function radar(cx, cy, r, t) {
+  X.save(); X.translate(cx, cy);
+  rr(-r * 1.25, -r * 1.25, r * 2.5, r * 2.5, r * 0.5, '#12141E', 'rgba(255,85,0,.45)', r * 0.04);
+  const g = X.createConicGradient(t * 2.4, 0, 0);
+  g.addColorStop(0, 'rgba(255,85,0,.55)'); g.addColorStop(0.28, 'rgba(255,85,0,0)'); g.addColorStop(1, 'rgba(255,85,0,0)');
+  X.fillStyle = g; X.beginPath(); X.arc(0, 0, r * 0.98, 0, 7); X.fill();
+  X.strokeStyle = 'rgba(255,85,0,.6)'; X.lineWidth = r * 0.07; X.beginPath(); X.arc(0, 0, r * 0.9, 0, 7); X.stroke();
+  X.strokeStyle = 'rgba(255,255,255,.3)'; X.lineWidth = r * 0.04; X.setLineDash([r * 0.14, r * 0.14]); X.beginPath(); X.arc(0, 0, r * 0.55, 0, 7); X.stroke(); X.setLineDash([]);
+  X.fillStyle = ACC; X.beginPath(); X.arc(0, 0, r * 0.15, 0, 7); X.fill();
+  X.fillStyle = '#fff'; X.beginPath(); X.arc(0, 0, r * 0.06, 0, 7); X.fill();
+  X.fillStyle = OK; X.beginPath(); X.arc(r * 0.42, -r * 0.48, r * 0.1, 0, 7); X.fill();
+  X.restore();
+}
+function wordmark(cx, y, size, a = 1) { rich([['Ani', '#fff'], ['Radar', ACC]], cx, y, size, a); }
+// Marca fija arriba (dentro de la zona segura)
+function brandTop(t) { radar(430, 214, 26, t); txt('aniradar.net', 470, 228, { size: 40, w: 800, align: 'left', c: '#e4e4e7' }); }
+function check(x, y, s, c = OK, lw) {
+  X.save(); X.strokeStyle = c; X.lineWidth = lw || s * 0.18; X.lineCap = 'round'; X.lineJoin = 'round';
+  X.beginPath(); X.moveTo(x - s * 0.42, y); X.lineTo(x - s * 0.12, y + s * 0.3); X.lineTo(x + s * 0.45, y - s * 0.32); X.stroke(); X.restore();
+}
+function tap(x, y, lt, at) { // pulsación: círculo que se encoge y onda que se expande
+  const p = P(lt, at - 0.25, at + 0.45); if (p <= 0 || p >= 1) return;
+  X.save(); X.globalAlpha = 1 - p;
+  X.fillStyle = 'rgba(255,255,255,.85)'; X.beginPath(); X.arc(x, y, 34 * (1 - p * 0.4), 0, 7); X.fill();
+  X.strokeStyle = 'rgba(255,255,255,.9)'; X.lineWidth = 6; X.beginPath(); X.arc(x, y, 40 + p * 70, 0, 7); X.stroke();
+  X.restore();
+}
+// Póster «genérico» (degradado + forma abstracta): nunca carátulas reales
+function fakePoster(x, y, w, h, hue, t = 0) {
+  const g = X.createLinearGradient(x, y, x + w, y + h);
+  g.addColorStop(0, `hsl(${hue} 70% 45%)`); g.addColorStop(1, `hsl(${(hue + 50) % 360} 70% 18%)`);
+  rr(x, y, w, h, Math.min(w, h) * 0.1, g);
+  X.save(); X.beginPath(); X.roundRect(x, y, w, h, Math.min(w, h) * 0.1); X.clip();
+  X.fillStyle = 'rgba(255,255,255,.14)'; X.beginPath(); X.arc(x + w * 0.7, y + h * 0.3, w * 0.28, 0, 7); X.fill();
+  X.fillStyle = 'rgba(0,0,0,.28)'; X.beginPath(); X.moveTo(x, y + h); X.lineTo(x, y + h * 0.65); X.quadraticCurveTo(x + w * 0.4, y + h * 0.45, x + w, y + h * 0.7); X.lineTo(x + w, y + h); X.fill();
+  X.restore();
+}
+function chip(x, y, label, o = {}) {
+  font(o.size || 38, 700); const w = X.measureText(label).width + (o.pad || 30) * 2, h = o.h || 84;
+  rr(x, y, w, h, h * 0.32, o.on ? 'rgba(255,85,0,.25)' : PANEL2, o.on ? ACC : LINE, o.on ? 4 : 2);
+  txt(label, x + w / 2, y + h / 2 + (o.size || 38) * 0.36, { size: o.size || 38, w: 700, c: o.on ? '#fff' : '#e4e4e7' });
+  return w;
+}
+function flow(labels, x0, y0, maxW, o = {}) { // coloca chips en filas; devuelve posiciones
+  font(o.size || 38, 700); const gap = 16, h = o.h || 84, pos = []; let x = x0, y = y0;
+  labels.forEach((l) => { const w = X.measureText(l).width + (o.pad || 30) * 2; if (x + w > x0 + maxW) { x = x0; y += h + gap; } pos.push({ l, x, y, w, h }); x += w + gap; });
+  return pos;
+}
+function cta(lt, url, sub) {
+  radar(540, 720, 120, lt + 3);
+  const s = eb(P(lt, 0.1, 0.6));
+  rich([['Ani', '#fff'], ['Radar', ACC]], 540, 1010, 140, P(lt, 0.1, 0.4), s);
+  font(52, 800); const w = X.measureText(url).width + 90;
+  X.save(); X.globalAlpha *= P(lt, 0.5, 0.9);
+  rr(540 - w / 2, 1080, w, 110, 55, ACC); txt(url, 540, 1153, { size: 52, w: 800 });
+  X.restore();
+  txt(sub, 540, 1290, { size: 40, w: 600, c: MUT, a: P(lt, 0.8, 1.2) });
+}
+function hook(lt, lines, size, y0, sub) {
+  lines.forEach((segs, i) => { const p = P(lt, 0.05 + i * 0.22, 0.45 + i * 0.22); rich(segs, 540, y0 + i * size * 1.12, size, p, 0.7 + 0.3 * eb(p)); });
+  if (sub) txt(sub[0], 540, y0 + lines.length * size * 1.12 + 70, { size: 46, w: 700, c: sub[1] || MUT, a: P(lt, sub[2] || 1.4, (sub[2] || 1.4) + 0.4) });
+}
+function scene(t, a, b, fn, last) {
+  if (t < a || t >= b) return;
+  const lt = t - a, d = b - a, ai = eo(P(lt, 0, 0.35)), ao = last ? 1 : 1 - P(lt, d - 0.3, d);
+  X.save(); X.globalAlpha = Math.min(ai, ao); X.translate(0, (1 - ai) * 60 - (1 - ao) * 40); fn(lt, d); X.restore();
+}
+
+/* ================= VÍDEO 1 · «¿No recuerdas el nombre de un anime?» ================= */
+function v1(t) {
+  bg(t); brandTop(t);
+  scene(t, 0, 3.2, (lt) => hook(lt, [[['¿Viste un anime']], [['y '], ['NO', ACC], [' recuerdas']], [['el nombre?']]], 112, 760, ['Lo encuentras en segundos ↓', '#e4e4e7', 1.5]));
+  scene(t, 3.2, 8, (lt) => {
+    txt('Descríbelo con tus palabras', 540, 540, { size: 62, w: 900 });
+    const typing = 'chico que ve fantasmas y tiene una espada gigante', n = Math.floor(typing.length * P(lt, 0.4, 2.4));
+    rr(90, 620, 900, 230, 34, PANEL, lt > 0.3 && lt < 3 ? ACC : LINE, 4);
+    X.save(); X.strokeStyle = ACC; X.lineWidth = 7; X.beginPath(); X.arc(160, 690, 20, 0, 7); X.stroke(); X.beginPath(); X.moveTo(175, 705); X.lineTo(195, 725); X.stroke(); X.restore();
+    const lines = wrap(typing.slice(0, n) || ' ', 720, 46, 600);
+    lines.forEach((l, i) => txt(l, 225, 706 + i * 60, { size: 46, w: 600, align: 'left', c: '#f4f4f5' }));
+    if (lt < 2.6 && Math.floor(lt * 2.5) % 2 === 0) { font(46, 600); const lw = X.measureText(lines[lines.length - 1]).width; rr(230 + lw, 668 + (lines.length - 1) * 60, 5, 50, 2, ACC); }
+    rr(670, 770, 290, 60, 20, ACC); txt('Identificar', 815, 812, { size: 34, w: 800 }); tap(815, 800, lt, 2.8);
+    const p = eo(P(lt, 3.0, 3.6));
+    if (p > 0) {
+      X.save(); X.globalAlpha *= p; X.translate(0, (1 - p) * 80);
+      rr(90, 910, 900, 420, 34, PANEL, 'rgba(52,211,153,.5)', 3);
+      fakePoster(130, 950, 230, 340, 18);
+      rr(400, 960, 300, 56, 16, 'rgba(52,211,153,.18)'); check(432, 988, 30); txt('IDENTIFICADO', 460, 1000, { size: 30, w: 800, c: OK, align: 'left' });
+      rr(400, 1050, 520, 40, 12, 'rgba(255,255,255,.85)'); rr(400, 1106, 360, 30, 10, 'rgba(255,255,255,.3)');
+      txt('★ 8.9', 400, 1190, { size: 40, w: 800, c: GOLD, align: 'left' });
+      txt('Dónde verlo en tu país:', 400, 1250, { size: 32, w: 600, c: MUT, align: 'left' });
+      chip(400, 1270, '2 plataformas ✓', { size: 30, h: 58, pad: 22, on: true });
+      X.restore();
+    }
+  });
+  scene(t, 8, 11.6, (lt) => {
+    rich([['O sube una '], ['CAPTURA', ACC]], 540, 540, 84, 1, 1);
+    const x = 160, y = 640, w = 760, h = 440;
+    X.save(); X.beginPath(); X.roundRect(x, y, w, h, 30); X.clip();
+    const g = X.createLinearGradient(0, y, 0, y + h); g.addColorStop(0, '#3b2a6b'); g.addColorStop(1, '#f08a4b'); X.fillStyle = g; X.fillRect(x, y, w, h);
+    X.fillStyle = 'rgba(255,230,180,.9)'; X.beginPath(); X.arc(x + 540, y + 170, 70, 0, 7); X.fill();
+    X.fillStyle = '#2a1b3d'; X.beginPath(); X.moveTo(x, y + h); X.lineTo(x, y + 300); X.lineTo(x + 200, y + 220); X.lineTo(x + 380, y + 320); X.lineTo(x + 560, y + 250); X.lineTo(x + w, y + 330); X.lineTo(x + w, y + h); X.fill();
+    X.fillStyle = '#140d20'; X.beginPath(); X.moveTo(x, y + h); X.lineTo(x, y + 380); X.quadraticCurveTo(x + 380, y + 330, x + w, y + 400); X.lineTo(x + w, y + h); X.fill();
+    const scanning = P(lt, 0.4, 2.1);
+    if (scanning > 0 && scanning < 1) { const ly = y + (0.5 - 0.5 * Math.cos(scanning * Math.PI * 4)) * h; X.fillStyle = ACC; X.shadowColor = ACC; X.shadowBlur = 30; X.fillRect(x, ly, w, 6); }
+    X.restore(); rr(x, y, w, h, 30, null, 'rgba(255,255,255,.2)', 3);
+    const p = eb(P(lt, 2.2, 2.7));
+    if (p > 0) {
+      X.save(); X.globalAlpha *= cl(p); X.translate(540, 1200); X.scale(p, p);
+      rr(-400, -70, 800, 190, 30, PANEL, ACC, 4);
+      txt('Episodio 7 · minuto 12:40', 0, 0, { size: 50, w: 900 });
+      txt('98 % de similitud', 0, 80, { size: 40, w: 700, c: OK });
+      X.restore();
+    }
+  });
+  scene(t, 11.6, 14.2, (lt) => {
+    txt('Y además…', 540, 640, { size: 64, w: 900 });
+    [['Gratis', 0.2], ['Sin registrarte', 0.6], ['Dónde verlo LEGAL', 1.0], ['en tu país', 1.0]].forEach(([s, at], i) => {
+      const p = eo(P(lt, at, at + 0.4)); if (i === 3) return;
+      const y = 800 + i * 160; X.save(); X.globalAlpha *= p; X.translate((1 - p) * -80, 0);
+      rr(150, y, 110, 110, 30, 'rgba(52,211,153,.18)'); check(205, y + 55, 52);
+      txt(s, 300, y + 75, { size: 62, w: 800, align: 'left' });
+      if (i === 2) txt('en tu país', 300, y + 140, { size: 46, w: 600, c: MUT, align: 'left' });
+      X.restore();
+    });
+  });
+  scene(t, 14.2, 17.5, (lt) => cta(lt, 'aniradar.net', 'Búscalo en Google · enlace en el perfil'), true);
+}
+
+/* ================= VÍDEO 2 · «¿Qué anime ver hoy?» ================= */
+const Q = [
+  { q: '1 · ¿Qué te apetece sentir?', o: ['Acción', 'Reírme', 'Emocionarme', 'Misterio', 'Aventura', 'Romance', 'Terror', 'Deportes'], pick: 0 },
+  { q: '2 · ¿Cuánto tiempo tienes?', o: ['Una película', 'Serie corta', 'Media', 'Larga'], pick: 1 },
+  { q: '3 · ¿Qué prefieres?', o: ['Lo que todos ven', 'Una joya oculta'], pick: 1 }
+];
+function v2(t) {
+  bg(t); brandTop(t);
+  scene(t, 0, 3, (lt) => hook(lt, [[['¿No sabes qué']], [['anime ver '], ['hoy', ACC], ['?']]], 112, 820, ['Responde 3 preguntas ↓', '#e4e4e7', 1.2]));
+  scene(t, 3, 11.4, (lt) => {
+    let y = 430;
+    Q.forEach((qq, qi) => {
+      const appear = qi * 2.4, pickAt = appear + 1.5;
+      const p = eo(P(lt, appear, appear + 0.4)); if (p <= 0) return;
+      X.save(); X.globalAlpha *= p; X.translate(0, (1 - p) * 50);
+      txt(qq.q, 90, y, { size: 46, w: 800, align: 'left' });
+      const pos = flow(qq.o, 90, y + 30, 880, { size: 38 });
+      pos.forEach((c, i) => chip(c.x, c.y, c.l, { size: 38, on: i === qq.pick && lt >= pickAt }));
+      const sel = pos[qq.pick]; tap(sel.x + sel.w / 2, sel.y + sel.h / 2, lt, pickAt);
+      X.restore();
+      y = pos[pos.length - 1].y + 84 + 90;
+    });
+    const p = eo(P(lt, 7.2, 7.6));
+    if (p > 0) { X.save(); X.globalAlpha *= p; rr(90, y - 20, 900, 120, 36, ACC); txt('Recomiéndame', 540, y + 58, { size: 50, w: 900 }); X.restore(); tap(540, y + 40, lt, 7.9); }
+  });
+  scene(t, 11.4, 14.4, (lt) => {
+    rich([['6 recomendaciones']], 540, 470, 76, 1, 1);
+    txt('al instante, para ti', 540, 545, { size: 46, w: 700, c: ACC });
+    const hues = [18, 200, 280, 140, 330, 45], scores = ['8.6', '8.2', '8.9', '8.4', '8.1', '8.7'];
+    hues.forEach((h, i) => {
+      const cx = 90 + (i % 3) * 305, cy = 610 + Math.floor(i / 3) * 440, p = eb(P(lt, 0.2 + i * 0.12, 0.6 + i * 0.12));
+      if (p <= 0) return;
+      X.save(); X.globalAlpha *= cl(p); X.translate(cx + 140, cy + 200); X.scale(p, p); X.translate(-(cx + 140), -(cy + 200));
+      rr(cx, cy, 280, 410, 26, PANEL, LINE, 2); fakePoster(cx + 16, cy + 16, 248, 250, h);
+      rr(cx + 16, cy + 284, 200, 24, 8, 'rgba(255,255,255,.8)');
+      txt('★ ' + scores[i], cx + 16, cy + 345, { size: 32, w: 800, c: GOLD, align: 'left' });
+      rr(cx + 16, cy + 360, 248, 36, 10, ACC); txt('Dónde verlo', cx + 140, cy + 388, { size: 24, w: 800 });
+      X.restore();
+    });
+  });
+  scene(t, 14.4, 17.5, (lt) => cta(lt, 'aniradar.net/que-anime-ver', 'Gratis · enlace en el perfil'), true);
+}
+
+/* ================= VÍDEO 3 · «¿A qué hora sale el próximo episodio?» ================= */
+function bell(cx, cy, s, a) {
+  X.save(); X.translate(cx, cy - s * 0.6); X.rotate(a); X.translate(0, s * 0.6);
+  X.fillStyle = ACC; X.beginPath(); X.moveTo(-s * 0.55, s * 0.35); X.quadraticCurveTo(-s * 0.5, -s * 0.55, 0, -s * 0.6); X.quadraticCurveTo(s * 0.5, -s * 0.55, s * 0.55, s * 0.35); X.lineTo(s * 0.7, s * 0.5); X.lineTo(-s * 0.7, s * 0.5); X.closePath(); X.fill();
+  X.beginPath(); X.arc(0, s * 0.65, s * 0.16, 0, 7); X.fill(); X.beginPath(); X.arc(0, -s * 0.66, s * 0.1, 0, 7); X.fill();
+  X.restore();
+}
+function v3(t) {
+  bg(t); brandTop(t);
+  scene(t, 0, 3.2, (lt) => hook(lt, [[['¿A qué hora sale']], [['el próximo']], [['episodio en '], ['TU', ACC], [' país?']]], 104, 760, ['Con cuenta atrás en tu zona horaria ↓', '#e4e4e7', 1.6]));
+  scene(t, 3.2, 8.2, (lt) => {
+    txt('PRÓXIMO EPISODIO', 540, 470, { size: 38, w: 800, c: ACC });
+    rr(90, 520, 900, 500, 40, PANEL, 'rgba(255,85,0,.45)', 3);
+    fakePoster(130, 560, 260, 380, 280);
+    rr(430, 580, 480, 40, 12, 'rgba(255,255,255,.85)'); rr(430, 640, 320, 30, 10, 'rgba(255,255,255,.3)');
+    txt('Ep. 9 · Hoy 18:30', 430, 730, { size: 40, w: 700, c: '#e4e4e7', align: 'left' });
+    const left = 5 * 3600 + 12 * 60 + 44 - Math.floor(lt), p2 = (n) => String(n).padStart(2, '0');
+    txt(`${p2(Math.floor(left / 3600))}:${p2(Math.floor(left % 3600 / 60))}:${p2(left % 60)}`, 430, 860, { size: 104, w: 800, fam: MONO, align: 'left' });
+    txt('tu hora local', 430, 920, { size: 34, w: 600, c: MUT, align: 'left' });
+    const days = [['HOY', 20], ['MAÑ', 21], ['MIÉ', 22], ['JUE', 23], ['VIE', 24]], sel = lt > 2.6 ? 1 : 0, mv = eo(P(lt, 2.6, 3.0));
+    const ix = 90 + (sel === 1 ? 184 * mv : 0);
+    rr(ix, 1090, 168, 190, 34, 'rgba(255,85,0,.22)', ACC, 4);
+    days.forEach(([d, n], i) => { const x = 90 + i * 184; rr(x, 1090, 168, 190, 34, null, LINE, 2); txt(d, x + 84, 1160, { size: 34, w: 700, c: MUT }); txt(String(n), x + 84, 1240, { size: 64, w: 900 }); });
+    tap(90 + 184 + 84, 1185, lt, 2.6);
+  });
+  scene(t, 8.2, 11.2, (lt) => {
+    bell(540, 700, 150, Math.sin(lt * 14) * 0.22 * (1 - P(lt, 0.2, 1.6)));
+    txt('Te avisa antes', 540, 1000, { size: 84, w: 900 });
+    txt('Recordatorio en tu calendario', 540, 1090, { size: 46, w: 700, c: '#e4e4e7' });
+    txt('10 minutos antes del estreno', 540, 1160, { size: 46, w: 700, c: ACC, a: P(lt, 0.8, 1.2) });
+  });
+  scene(t, 11.2, 14, (lt) => {
+    rich([['Y dónde verlo '], ['LEGAL', ACC]], 540, 560, 84, 1, 1);
+    const cc = ['España', 'México', 'Argentina', 'Colombia', 'Chile', 'Perú', 'EE. UU.', 'Brasil', 'Francia', 'Italia'];
+    const pos = flow(cc, 90, 650, 900, { size: 42, h: 92 });
+    pos.forEach((c, i) => { const p = eb(P(lt, 0.2 + i * 0.08, 0.5 + i * 0.08)); if (p <= 0) return; X.save(); X.globalAlpha *= cl(p); X.translate(c.x + c.w / 2, c.y + 46); X.scale(p, p); X.translate(-(c.x + c.w / 2), -(c.y + 46)); chip(c.x, c.y, c.l, { size: 42, h: 92, on: i === 0 }); X.restore(); });
+    txt('20 países · 6 idiomas', 540, pos[pos.length - 1].y + 230, { size: 52, w: 800, c: '#e4e4e7', a: P(lt, 1.2, 1.6) });
+  });
+  scene(t, 14, 17.3, (lt) => cta(lt, 'aniradar.net', 'Gratis · enlace en el perfil'), true);
+}
+
+const VIDEOS = { identifica: { fn: v1, dur: 17.5 }, 'que-anime-ver': { fn: v2, dur: 17.5 }, calendario: { fn: v3, dur: 17.3 } };
+let cur = VIDEOS.identifica;
+window.setup = (name) => { cur = VIDEOS[name]; return cur.dur; };
+window.frame = (t, q = 0.92) => { cur.fn(t); return C.toDataURL('image/jpeg', q); };
+window.ready = document.fonts.load('900 100px Inter').then(() => document.fonts.load('800 100px Inter')).then(() => document.fonts.load('700 100px Inter')).then(() => document.fonts.load('600 100px Inter')).then(() => true);
+</script></body></html>
