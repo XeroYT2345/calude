@@ -8,19 +8,19 @@ Orden de trabajo para pasar de «está en el repositorio» a «cobra». Cada pas
 |---|---|---|
 | Rellenar los huecos en rojo de `aviso-legal.html` y `privacidad.html` (nombre, NIF, dirección, correo, fecha, plataforma de pago, hosting) | tú | Busca `[[` en los dos archivos |
 | Crear el producto Pro y las claves de licencia | tú | Sección 2 |
-| Pegar `checkoutUrl` y `productId` en `CONFIG` y borrar `demoCode` | tú | Al principio del `<script>` de `index.html` |
-| Cambiar `talonario.app` por tu dominio en `CONFIG.site`, `robots.txt`, `sitemap.xml` y la etiqueta `canonical` | tú | Buscar y reemplazar |
-| Subir la carpeta `talonario/` entera (con `fonts/`, `og.png`, `robots.txt`, `sitemap.xml`) | tú | Hostinger, o gratis en Cloudflare Pages / Netlify |
+| Pegar `checkoutUrl` y `productId` en `CONFIG` (la clave de prueba `TALONARIO-DEMO` deja de funcionar sola en cuanto hay `checkoutUrl`) | tú | Al principio del `<script>` de `index.html` |
+| Cambiar `talonario.app` por tu dominio en `CONFIG.site`, las etiquetas `canonical`, `og:url` y `og:image` de `index.html`, `robots.txt` y `sitemap.xml` | tú | Buscar y reemplazar |
+| Subir la carpeta `talonario/` entera (con `fonts/`, `og.png`, `robots.txt`, `sitemap.xml`; `test/` no hace falta) | tú | Hostinger, o gratis en Cloudflare Pages / Netlify |
 | Hacer una compra real de prueba y activar la clave | tú | Lemon Squeezy tiene modo de prueba con tarjeta `4242 4242 4242 4242` |
 | Dar de alta el dominio en Google Search Console y enviar `sitemap.xml` | tú | search.google.com/search-console |
-| Analítica sin cookies (opcional) | tú | Cloudflare Web Analytics es gratis y no necesita banner |
+| Analítica sin cookies (opcional) | tú | Cloudflare Web Analytics es gratis y no necesita banner; si la pones, añade una línea en `privacidad.html` |
 | Publicar el vídeo de TikTok y los mensajes de la sección 4 | tú | `tiktok/out/talonario*.mp4` |
 
 ## 2. Lemon Squeezy paso a paso
 
 1. Crea la cuenta y la tienda. Activa el modo **Test** para probar sin cobrar.
-2. **Products → New product:** nombre «Talonario Pro», precio 19 €, tipo «Single payment».
-3. En el producto, pestaña **License keys:** actívalas y pon «Activation limit» en 3 (tres navegadores o dispositivos por compra).
+2. **Products → New product:** nombre «Talonario Pro», precio 19 €, tipo «Single payment». Marca el precio como **impuestos incluidos** (tax-inclusive): el aviso legal promete 19 € con impuestos.
+3. En el producto, pestaña **License keys:** actívalas y pon «Activation limit» en 3 (tres navegadores o dispositivos por compra). La app activa la clave en Lemon Squeezy al pegarla, así que ese límite se aplica de verdad.
 4. Pestaña **Checkout:** copia el enlace «Share → Checkout link». Ese es `CONFIG.checkoutUrl`.
 5. El id numérico del producto está en la URL del panel (`/products/123456`). Ese es `CONFIG.productId`.
 6. **Settings → Emails:** en el correo de entrega deja claro qué hacer con la clave. Texto sugerido:
