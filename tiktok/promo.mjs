@@ -19,7 +19,7 @@ const FPS = 30;
 fs.mkdirSync(out, { recursive: true });
 
 // Servidor local: el lienzo solo puede exportar fotogramas de los clips si página e imágenes comparten origen
-const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.json': 'application/json' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript; charset=utf-8', '.jpg': 'image/jpeg', '.json': 'application/json', '.css': 'text/css', '.woff2': 'font/woff2', '.png': 'image/png' };
 const server = http.createServer((req, res) => {
   const p = path.join(here, decodeURIComponent(new URL(req.url, 'http://x').pathname));
   if (!p.startsWith(here) || !fs.existsSync(p) || fs.statSync(p).isDirectory()) { res.writeHead(404); res.end(); return; }
@@ -33,6 +33,7 @@ page.on('pageerror', (e) => console.error('Error en la página:', e.message));
 await page.goto(`http://127.0.0.1:${server.address().port}/${pageFile}`);
 await page.evaluate(() => window.ready);
 const { dur, events } = await page.evaluate(() => ({ dur: window.DUR, events: window.EVENTS }));
+console.log(`Duración: ${dur.toFixed(2)} s · ${events.length} efectos de sonido`);
 const save = (file, url) => fs.writeFileSync(file, Buffer.from(url.split(',')[1], 'base64'));
 const shot = (t, q) => page.evaluate(([x, y]) => window.frame(x, y), [t, q]);
 const finish = async () => { await browser.close(); server.close(); };

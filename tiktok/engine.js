@@ -1,8 +1,17 @@
-/* Motor de los anuncios de AniRadar (1080×1920): utilidades de dibujo, iconos, marca, mascota Radi, tipografía cinética,
-   móvil, fondos, registro de escenas/efectos y composición con transiciones. Cada página define sus escenas y llama a finalize(). */
+/* Motor de los anuncios (1080×1920): utilidades de dibujo, iconos, marca, mascota Radi, tipografía cinética,
+   móvil, fondos, registro de escenas/efectos y composición con transiciones. Cada página define sus escenas y llama a finalize().
+   Tema: una página puede definir window.THEME antes de cargar este archivo para cambiar colores, fuentes y fondo
+   (ver las claves por defecto en T, que son las de AniRadar). Sin THEME todo se dibuja exactamente igual que siempre. */
 const W = 1080, H = 1920, C = document.getElementById('c'), X = C.getContext('2d');
 const OFF = document.createElement('canvas'); OFF.width = W; OFF.height = H; const O = OFF.getContext('2d');
-const INK = '#14162B', MUT = '#6B6F86', ACC = '#FF5500', ACC2 = '#FF8A3D', OK = '#16A34A', OKBG = 'rgba(22,163,74,.12)', MONO = '"DejaVu Sans Mono", monospace';
+const T = Object.assign({
+  acc: '#FF5500', acc2: '#FF8A3D', ink: '#14162B', mut: '#6B6F86', ok: '#16A34A', okbg: 'rgba(22,163,74,.12)',
+  font: 'Inter', mono: '"DejaVu Sans Mono", monospace', fontWeights: ['900', '800', '700', '600'], // fuente de interfaz, monoespaciada y pesos que precarga finalize()
+  bg: ['#FFFFFF', '#FBF7FF', '#F1ECFF'], blobs: ['rgba(255,138,61,.20)', 'rgba(139,108,255,.20)', 'rgba(255,85,0,.10)'], dust: '255,120,60', // fondo: degradado, 3 manchas y motas (r,g,b)
+  glow: 'rgba(255,85,0,.22)', confetti: ['#FF5500', '#FFD166', '#7C5CFF', '#34D399', '#FF7AB6', '#4FC3F7'], // brillo de la pantalla del móvil y colores del confeti
+  bgDraw: null // función opcional (ctx, t) que dibuja encima del fondo
+}, window.THEME || {});
+const INK = T.ink, MUT = T.mut, ACC = T.acc, ACC2 = T.acc2, OK = T.ok, OKBG = T.okbg, MONO = T.mono;
 
 const cl = (v, a = 0, b = 1) => Math.min(b, Math.max(a, v));
 const P = (t, a, b) => cl((t - a) / (b - a));
@@ -12,9 +21,9 @@ const eb = (x) => { const c1 = 1.70158, c3 = c1 + 1; return x <= 0 ? 0 : 1 + c3 
 let K = X; // contexto activo (cada escena se dibuja en el lienzo auxiliar y luego se compone con zoom/desenfoque)
 
 /* ---------- utilidades de dibujo ---------- */
-function font(size, w = 800, fam = 'Inter') { K.font = `${w} ${size}px ${fam}`; }
+function font(size, w = 800, fam = T.font) { K.font = `${w} ${size}px ${fam}`; }
 function txt(s, x, y, o = {}) {
-  K.save(); K.globalAlpha *= (o.a ?? 1); font(o.size || 60, o.w || 800, o.fam || 'Inter');
+  K.save(); K.globalAlpha *= (o.a ?? 1); font(o.size || 60, o.w || 800, o.fam || T.font);
   K.fillStyle = o.c || INK; K.textAlign = o.align || 'left'; K.textBaseline = 'alphabetic'; K.fillText(s, x, y); K.restore();
 }
 function wrap(s, maxW, size, w = 800) {
@@ -174,7 +183,7 @@ function phone(cx, top, w, h, t, screen, o = {}) {
   const sx = x + 16, sy = top + 16, sw = w - 32, sh = h - 32;
   K.save(); K.beginPath(); K.roundRect(sx, sy, sw, sh, r - 14); K.clip();
   const g = K.createLinearGradient(0, sy, 0, sy + sh); g.addColorStop(0, '#0B0C12'); g.addColorStop(1, '#141020'); K.fillStyle = g; K.fillRect(sx, sy, sw, sh);
-  const gl = K.createRadialGradient(sx + sw * 0.5, sy, 0, sx + sw * 0.5, sy, sw); gl.addColorStop(0, 'rgba(255,85,0,.22)'); gl.addColorStop(1, 'rgba(255,85,0,0)'); K.fillStyle = gl; K.fillRect(sx, sy, sw, sh);
+  const gl = K.createRadialGradient(sx + sw * 0.5, sy, 0, sx + sw * 0.5, sy, sw); gl.addColorStop(0, T.glow); gl.addColorStop(1, 'rgba(255,85,0,0)'); K.fillStyle = gl; K.fillRect(sx, sy, sw, sh);
   screen(sx, sy, sw, sh); K.restore();
   if (o.island !== false) rr(cx - 70, top + 34, 140, 40, 20, '#000');
 }
@@ -186,11 +195,12 @@ function phoneHeader(sx, sy, sw, t) {
 /* ---------- fondos ---------- */
 function blob(x, y, r, c) { const g = X.createRadialGradient(x, y, 0, x, y, r); g.addColorStop(0, c); g.addColorStop(1, 'rgba(255,255,255,0)'); X.fillStyle = g; X.fillRect(0, 0, W, H); }
 function lightBg(t) {
-  const g = X.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#FFFFFF'); g.addColorStop(0.55, '#FBF7FF'); g.addColorStop(1, '#F1ECFF'); X.fillStyle = g; X.fillRect(0, 0, W, H);
-  blob(860 + 120 * Math.sin(t * 0.35), 300 + 80 * Math.cos(t * 0.3), 760, 'rgba(255,138,61,.20)');
-  blob(160 + 110 * Math.cos(t * 0.28), 1380 + 120 * Math.sin(t * 0.33), 820, 'rgba(139,108,255,.20)');
-  blob(900 + 90 * Math.sin(t * 0.22), 1700, 600, 'rgba(255,85,0,.10)');
-  SEED = 7; for (let i = 0; i < 26; i++) { const px = rnd() * W, py = (rnd() * H - t * (18 + rnd() * 30)) % H, r = 2 + rnd() * 4; X.fillStyle = `rgba(255,120,60,${0.12 + 0.1 * Math.sin(t * 2 + i)})`; X.beginPath(); X.arc(px, py < 0 ? py + H : py, r, 0, 7); X.fill(); }
+  const g = X.createLinearGradient(0, 0, 0, H); g.addColorStop(0, T.bg[0]); g.addColorStop(0.55, T.bg[1]); g.addColorStop(1, T.bg[2]); X.fillStyle = g; X.fillRect(0, 0, W, H);
+  blob(860 + 120 * Math.sin(t * 0.35), 300 + 80 * Math.cos(t * 0.3), 760, T.blobs[0]);
+  blob(160 + 110 * Math.cos(t * 0.28), 1380 + 120 * Math.sin(t * 0.33), 820, T.blobs[1]);
+  blob(900 + 90 * Math.sin(t * 0.22), 1700, 600, T.blobs[2]);
+  SEED = 7; for (let i = 0; i < 26; i++) { const px = rnd() * W, py = (rnd() * H - t * (18 + rnd() * 30)) % H, r = 2 + rnd() * 4; X.fillStyle = `rgba(${T.dust},${0.12 + 0.1 * Math.sin(t * 2 + i)})`; X.beginPath(); X.arc(px, py < 0 ? py + H : py, r, 0, 7); X.fill(); }
+  if (T.bgDraw) { X.save(); T.bgDraw(X, t); X.restore(); }
 }
 function scenery(x, y, w, h, t) { // fotograma original (paisaje al atardecer) para la demo de captura
   K.save(); K.beginPath(); K.roundRect(x, y, w, h, 26); K.clip();
@@ -206,7 +216,7 @@ function scenery(x, y, w, h, t) { // fotograma original (paisaje al atardecer) p
   K.restore();
 }
 function confetti(cx, cy, lt, n = 90, seed = 11, spread = 1) {
-  if (lt <= 0 || lt > 3.2) return; SEED = seed; const cols = [ACC, '#FFD166', '#7C5CFF', '#34D399', '#FF7AB6', '#4FC3F7'];
+  if (lt <= 0 || lt > 3.2) return; SEED = seed; const cols = T.confetti;
   for (let i = 0; i < n; i++) {
     const a = rnd() * Math.PI * 2, v = (500 + rnd() * 900) * spread, vx = Math.cos(a) * v, vy = Math.sin(a) * v - 600 * spread, rot = rnd() * 6, vr = (rnd() - 0.5) * 14, c = cols[i % cols.length], sw = 10 + rnd() * 12;
     const x = cx + vx * lt * 0.9, y = cy + vy * lt * 0.9 + 0.5 * 1500 * lt * lt;
@@ -274,5 +284,5 @@ function finalize() {
     if (IMG.size > 240) [...IMG.keys()].slice(0, 120).forEach((k) => IMG.delete(k));
     return C.toDataURL('image/jpeg', q);
   };
-  window.ready = Promise.all(['900', '800', '700', '600'].map((w) => document.fonts.load(`${w} 100px Inter`))).then(() => true);
+  window.ready = Promise.all(T.fontWeights.map((w) => document.fonts.load(`${w} 100px ${T.font}`))).then(() => true);
 }

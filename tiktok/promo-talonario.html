@@ -1,0 +1,192 @@
+<!doctype html>
+<html lang="es"><head><meta charset="utf-8"><title>Talonario · promo con grabación real</title>
+<link rel="stylesheet" href="fonts-talonario/fonts.css">
+<style>html,body{margin:0;background:#000}canvas{display:block;width:540px;height:960px}</style></head>
+<body><canvas id="c" width="1080" height="1920"></canvas>
+<script src="clips/index.js"></script>
+<script>
+/* Tema de Talonario para engine.js: papel, tinta, sello rojo (con moderación), Bricolage Grotesque e IBM Plex Mono. */
+window.THEME = {
+  acc: '#C53A30', acc2: '#D9574D', ink: '#17223B', mut: '#5B6878', ok: '#1B7F4E', okbg: 'rgba(27,127,78,.12)',
+  font: '"Bricolage Grotesque"', mono: '"IBM Plex Mono", monospace', fontWeights: ['700', '600', '500', '400'],
+  bg: ['#F4F7F9', '#E7ECF1', '#DDE4EB'], blobs: ['rgba(23,34,59,.09)', 'rgba(197,58,48,.07)', 'rgba(196,207,218,.55)'], dust: '91,104,120',
+  glow: 'rgba(23,34,59,0)', confetti: ['#C53A30', '#17223B', '#FFFFFF', '#E8655B', '#C4CFDA', '#E7ECF1'],
+  bgDraw: (ctx) => { // papel de libreta: rayas finas
+    ctx.strokeStyle = 'rgba(23,34,59,.06)'; ctx.lineWidth = 2;
+    for (let y = 96; y < 1920; y += 96) { ctx.beginPath(); ctx.moveTo(0, y); ctx.lineTo(1080, y); ctx.stroke(); }
+  }
+};
+</script>
+<script src="engine.js"></script>
+<script>
+/* Anuncio de Talonario (1080×1920, ~38 s) con la grabación REAL de la app dentro del móvil:
+   intro de marca → móvil fijo mientras cambian los títulos y los fragmentos → final de marca.
+   Los fragmentos (clips/cliente, concepto, linea, hoja, pagada, pdf) los graba node tiktok/clips-talonario.mjs, que guarda
+   además las marcas de sonido de cada uno (teclas, toques, total, sello) para sincronizar los efectos.
+   Sin mascota: el elemento vivo es el sello de goma. */
+const PAPEL = '#E7ECF1', HOJA = '#FFFFFF', RAYA = '#C4CFDA', TINTA = INK, SELLO = ACC;
+const EV = (id) => ((window.CLIPS || {})[id] || {}).ev || [];
+
+/* ---------- piezas propias ---------- */
+// Icono de la app: cuadrado redondeado de tinta con la «T» de papel (la del favicon)
+function talIcon(cx, cy, s, ring) {
+  K.save(); K.translate(cx, cy);
+  K.save(); K.shadowColor = ring ? 'rgba(0,0,0,.35)' : 'rgba(23,34,59,.38)'; K.shadowBlur = 70; K.shadowOffsetY = 26; rr(-s / 2, -s / 2, s, s, s * 0.22, TINTA); K.restore();
+  if (ring) rr(-s / 2, -s / 2, s, s, s * 0.22, null, 'rgba(231,236,241,.9)', s * 0.03);
+  const hl = K.createLinearGradient(0, -s / 2, 0, s / 2); hl.addColorStop(0, 'rgba(255,255,255,.12)'); hl.addColorStop(1, 'rgba(255,255,255,0)'); rr(-s / 2, -s / 2, s, s, s * 0.22, hl);
+  K.strokeStyle = PAPEL; K.lineCap = 'round'; K.lineWidth = s * 0.105;
+  K.beginPath(); K.moveTo(-s * 0.23, -s * 0.16); K.lineTo(s * 0.23, -s * 0.16); K.moveTo(0, -s * 0.16); K.lineTo(0, s * 0.27); K.stroke();
+  K.restore();
+}
+// Sello de goma: cae con golpe y se queda. p = (t − t0) / 0.35 sin recortar (más de 1 → ya ha caído; el anillo de polvo sigue un poco)
+function stamp(cx, cy, p, o = {}) {
+  if (p <= 0) return;
+  const text = o.text || 'PAGADA', sub = o.sub, fs = o.fs || 110, s = o.s || 1, rot = ((o.rot ?? -9) * Math.PI) / 180, col = o.c || SELLO;
+  const e = eb(cl(p)), sc = (1.7 - 0.7 * e) * s, al = cl(p * 3) * (o.a ?? 0.9);
+  font(fs, 700, MONO); const tw = K.measureText(text).width, w = tw + fs * 0.9, h = fs * 1.3 + (sub ? fs * 0.4 : 0);
+  K.save(); K.translate(cx, cy); K.rotate(rot - (1 - e) * 0.14); K.scale(sc, sc); K.globalAlpha *= al;
+  if (o.blend !== false) K.globalCompositeOperation = 'multiply';
+  rr(-w / 2, -h / 2, w, h, fs * 0.18, null, col, fs * 0.075); rr(-w / 2 + fs * 0.14, -h / 2 + fs * 0.14, w - fs * 0.28, h - fs * 0.28, fs * 0.1, null, col, fs * 0.03);
+  K.fillStyle = col; K.textAlign = 'center'; K.textBaseline = 'middle'; font(fs, 700, MONO); K.fillText(text, 0, sub ? -fs * 0.17 : fs * 0.04);
+  if (sub) { font(fs * 0.27, 500, MONO); K.fillText(sub, 0, fs * 0.5); }
+  K.restore();
+  const q = P(p, 0.6, 1.9); // polvo del golpe
+  if (q > 0 && q < 1) { K.save(); K.globalAlpha *= (1 - q) * 0.45; K.strokeStyle = col; K.lineWidth = 8 * (1 - q) + 2; K.beginPath(); K.ellipse(cx, cy, (w * s / 2) * (1 + q * 0.45), (h * s / 2) * (1 + q * 0.7), rot, 0, 7); K.stroke(); K.restore(); }
+}
+function iLock(x, y, s, c = TINTA) { K.save(); K.strokeStyle = c; K.fillStyle = c; K.lineWidth = s * 0.12; K.lineCap = 'round'; K.beginPath(); K.arc(x, y - s * 0.12, s * 0.22, Math.PI, 0); K.stroke(); rr(x - s * 0.34, y - s * 0.1, s * 0.68, s * 0.52, s * 0.1, c); K.fillStyle = HOJA; K.beginPath(); K.arc(x, y + s * 0.14, s * 0.07, 0, 7); K.fill(); K.restore(); }
+function iDoc(x, y, s, c = TINTA) { K.save(); K.strokeStyle = c; K.lineWidth = s * 0.1; K.lineJoin = 'round'; K.lineCap = 'round'; K.beginPath(); K.moveTo(x - s * 0.3, y - s * 0.42); K.lineTo(x + s * 0.08, y - s * 0.42); K.lineTo(x + s * 0.3, y - s * 0.2); K.lineTo(x + s * 0.3, y + s * 0.42); K.lineTo(x - s * 0.3, y + s * 0.42); K.closePath(); K.stroke(); K.beginPath(); K.moveTo(x - s * 0.14, y + 2); K.lineTo(x + s * 0.14, y + 2); K.moveTo(x - s * 0.14, y + s * 0.2); K.lineTo(x + s * 0.14, y + s * 0.2); K.stroke(); K.restore(); }
+function iPlus(x, y, s, c = SELLO) { K.save(); K.strokeStyle = c; K.lineWidth = s * 0.16; K.lineCap = 'round'; K.beginPath(); K.moveTo(x - s * 0.32, y); K.lineTo(x + s * 0.32, y); K.moveTo(x, y - s * 0.32); K.lineTo(x, y + s * 0.32); K.stroke(); K.restore(); }
+function chip(x, y, w, p, draw, h = 112) { rise(p, () => { card(x, y, w, h, 32, HOJA); draw(x, y); }, 40); } // tarjeta flotante
+function totalRow(x, y, w, label, value, o = {}) { txt(label, x, y, { size: o.size || 30, w: o.lw || 500, c: o.c || MUT }); txt(value, x + w, y, { size: (o.size || 30) + 2, w: o.vw || 600, c: o.vc || TINTA, fam: MONO, align: 'right' }); }
+
+/* ---------- 1 · Presentación ---------- */
+{
+  const a = 0, kt = KT('¿Autónomo?|Tu factura en|*30 segundos.*', { start: 0.55, stagger: 0.12, size: 94, w: 700 });
+  ev(a + 0.1, 'boom', 0.6); ktEvents(a, kt); ev(a + 2.45, 'boom', 0.9); ev(a + 2.52, 'bell', 0.8);
+  scene(a, 3.8, (lt) => {
+    for (let i = 0; i < 3; i++) { const ph = ((lt - 0.5 + i * 0.6) % 1.8) / 1.8; if (lt > 0.5) { const r = 165 + ph * 250; K.save(); K.globalAlpha *= (1 - ph) * 0.3; rr(540 - r, 640 - r, 2 * r, 2 * r, r * 0.3, null, TINTA, 5); K.restore(); } }
+    const p = P(lt, 0.05, 0.75), s = eb(p);
+    if (p > 0) { K.save(); K.translate(540, 640); K.scale(s, s); K.rotate((1 - eo(p)) * -0.4); K.translate(-540, -640); talIcon(540, 640, 300); K.restore(); }
+    drawKT(kt, 540, 1075, lt);
+    stamp(640, 1410, (lt - 2.4) / 0.35, { text: 'SIN REGISTRO', fs: 66, rot: -7 });
+  });
+}
+
+/* ---------- 2 · La app de verdad: el móvil se queda y van cambiando el título y el fragmento ---------- */
+{
+  const A = 3.8, d = clipDur;
+  const segs = [];
+  const add = (o) => { const start = segs.length ? segs[segs.length - 1].end : 0; const len = o.at + d(o.clip) + o.tail; segs.push({ ...o, start, end: start + len, len, kt: KT(o.head, { start: 0.05, size: o.size || 84, w: 700 }) }); };
+  add({ head: 'Escribes|el *cliente*', clip: 'cliente', at: 0.3, tail: 0.2 });
+  add({ head: 'Concepto y precio:|el *IVA* y la *retención*|se calculan solos', size: 70, clip: 'concepto', at: 0.15, tail: 0.2 });
+  add({ head: 'Añades|*líneas*', clip: 'linea', at: 0.15, tail: 0.2 });
+  add({ head: 'Y la hoja|queda *así*', clip: 'hoja', at: 0.15, tail: 0.2 });
+  add({ head: 'Márcala como|*pagada*', clip: 'pagada', at: 0.15, tail: 0.3 });
+  add({ head: 'Descarga|el *PDF*', clip: 'pdf', at: 0.15, tail: 0.6 });
+  const [S0, S1, S2, S3, S4, S5] = segs, B = A + S5.end;
+  const at = (seg, type, n = 0) => { const m = EV(seg.clip).filter((e) => e[1] === type); const e = m[n < 0 ? m.length + n : n]; return e ? seg.at + e[0] : 1e9; }; // segundo del tramo en que ocurre la marca n (−1: la última)
+
+  // Efectos de sonido sincronizados con las marcas de la grabación
+  segs.forEach((s, i) => {
+    if (i) ev(A + s.start, 'whoosh', 0.55); ktEvents(A + s.start, s.kt);
+    EV(s.clip).forEach(([t, k]) => {
+      const t0 = A + s.start + s.at + t;
+      if (k === 'key') ev(t0, 'key', 0.6); else if (k === 'tap') ev(t0, 'tap', 0.9); else if (k === 'total') ev(t0 + 0.05, 'ding', 0.9);
+      else if (k === 'stamp') { ev(t0 + 0.1, 'boom', 1); ev(t0 + 0.16, 'bell', 0.9); } else if (k === 'scroll') ev(t0, 'whoosh', 0.4);
+    });
+  });
+  ev(A + 0.15, 'whoosh', 0.7);
+  ev(A + S0.start + at(S0, 'key', -1) + 0.4, 'pop', 0.6);
+  ev(A + S3.start + 1.7, 'pop', 0.6);
+  ev(A + S5.start + at(S5, 'tap') + 0.45, 'ding', 0.8); ev(A + S5.start + at(S5, 'tap') + 0.5, 'confetti', 0.4); ev(A + S5.start + at(S5, 'tap') + 1.1, 'pop', 0.6);
+
+  const PW = 560, SW = PW - 32, SH = SW * 744 / 384, PH = SH + 32, TOP = 440;
+  const FECHA = ((window.CLIPS || {}).pagada || {}).fecha || new Date().toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' });
+
+  scene(A, B, (lt) => {
+    const si = segs.findIndex((s) => lt < s.end), seg = segs[si < 0 ? segs.length - 1 : si], rt = lt - seg.start, ct = Math.max(0, rt - seg.at);
+    // Título del tramo (sale con desenfoque al final del tramo)
+    K.save(); const outP = si < segs.length - 1 ? P(rt, seg.len - 0.25, seg.len) : 0; K.globalAlpha *= 1 - outP; if (outP > 0) K.filter = `blur(${outP * 14}px)`;
+    drawKT(seg.kt, 540, 290, rt); K.restore();
+
+    // Móvil con la grabación
+    const enter = eo(P(lt, 0.1, 0.8)), bump = seg.start > 0 ? 0.965 + 0.035 * eb(P(rt, 0, 0.35)) : 1;
+    let zoom = 1; if (seg === S3) zoom = 1 + 0.16 * eio(P(rt, 1.3, 2.1)) * (1 - eio(P(rt, seg.len - 0.6, seg.len - 0.15)));
+    K.save();
+    K.translate(540, TOP + (1 - enter) * 1100); K.scale(bump * zoom, bump * zoom); K.rotate(Math.sin(lt * 0.9) * 0.012); K.translate(-540, -TOP);
+    let scr = null;
+    phone(540, TOP, PW, PH, lt, (sx, sy, sw, sh) => {
+      scr = { sx, sy, sw, sh };
+      const im = clipImg(seg.clip, ct); if (im) { K.imageSmoothingQuality = 'high'; K.drawImage(im, sx, sy, sw, sh); }
+      const fl = 1 - P(rt, 0, 0.18); if (seg.start > 0 && fl > 0) { K.fillStyle = `rgba(255,255,255,${fl * 0.55})`; K.fillRect(sx, sy, sw, sh); }
+    }, { island: false });
+    EV(seg.clip).forEach(([t, k, fx, fy]) => { if (k === 'tap' && fx != null) ripple(scr.sx + fx * scr.sw, scr.sy + fy * scr.sh, rt, seg.at + t, 'rgba(23,34,59,.5)'); });
+    K.restore();
+
+    // Detalles flotantes de cada tramo
+    if (seg === S0) {
+      const tp = at(S0, 'key', -1) + 0.4;
+      chip(40, 1190, 470, P(rt, tp, tp + 0.45), (x, y) => { okBadge(x + 58, y + 56, 56); txt('Tus datos, guardados', x + 104, y + 52, { size: 36, w: 700 }); txt('para la próxima factura', x + 104, y + 88, { size: 27, w: 500, c: MUT }); });
+    }
+    if (seg === S1) {
+      const tp = at(S1, 'total') + 0.1;
+      chip(470, 1120, 480, P(rt, tp, tp + 0.45), (x, y) => {
+        totalRow(x + 40, y + 62, 400, 'Base', '1.200,00 €'); totalRow(x + 40, y + 108, 400, '+ IVA 21 %', '252,00 €'); totalRow(x + 40, y + 154, 400, '− IRPF 15 %', '180,00 €');
+        rr(x + 40, y + 178, 400, 2, 1, RAYA); totalRow(x + 40, y + 226, 400, 'Total', '1.272,00 €', { size: 36, lw: 700, c: TINTA, vw: 700, vc: SELLO });
+      }, 262);
+    }
+    if (seg === S2) {
+      const ta = at(S2, 'tap') + 0.25, tp = at(S2, 'total') + 0.1;
+      chip(40, 1040, 390, P(rt, ta, ta + 0.45) * (1 - P(rt, tp - 0.1, tp + 0.2)), (x, y) => { iPlus(x + 58, y + 56, 52); txt('Línea nueva', x + 104, y + 52, { size: 36, w: 700 }); txt('las que haga falta', x + 104, y + 88, { size: 27, w: 500, c: MUT }); });
+      chip(470, 1180, 480, P(rt, tp, tp + 0.45), (x, y) => { totalRow(x + 40, y + 62, 400, '3 × 150,00 €', '450,00 €'); rr(x + 40, y + 86, 400, 2, 1, RAYA); totalRow(x + 40, y + 134, 400, 'Total', '1.749,00 €', { size: 36, lw: 700, c: TINTA, vw: 700, vc: SELLO }); }, 170);
+    }
+    if (seg === S3) {
+      rise(P(rt, 1.7, 2.2), () => {
+        card(90, 1250, 860, 236, 36, HOJA);
+        totalRow(130, 1308, 780, 'Base imponible', '1.650,00 €'); totalRow(130, 1352, 780, 'IVA 21 %', '346,50 €'); totalRow(130, 1396, 780, 'IRPF 15 %', '−247,50 €');
+        rr(130, 1416, 780, 2, 1, RAYA); totalRow(130, 1462, 780, 'Total', '1.749,00 €', { size: 38, lw: 700, c: TINTA, vw: 700, vc: SELLO });
+      }, -50);
+    }
+    if (seg === S4) {
+      const ts = at(S4, 'stamp') + 0.1, outP = P(rt, seg.len - 0.3, seg.len - 0.05);
+      K.save(); K.globalAlpha *= 1 - outP; stamp(540, 1010, (rt - ts) / 0.35, { text: 'PAGADA', sub: FECHA, fs: 150, rot: -11 }); K.restore();
+    }
+    if (seg === S5) {
+      const tt = at(S5, 'tap') + 0.45;
+      chip(470, 1060, 470, P(rt, tt, tt + 0.45), (x, y) => { okBadge(x + 58, y + 56, 56); txt('PDF listo', x + 104, y + 52, { size: 36, w: 700 }); txt('en un segundo', x + 104, y + 88, { size: 27, w: 500, c: MUT }); });
+      rise(P(rt, tt + 0.6, tt + 1.1), () => {
+        card(90, 1300, 860, 170, 36, HOJA); iLock(170, 1385, 70);
+        txt('Tus datos no salen de tu navegador', 230, 1372, { size: 38, w: 700 }); txt('Sin registro, sin cuenta, sin servidor', 230, 1420, { size: 28, w: 500, c: MUT });
+      }, -50);
+    }
+  });
+
+  /* ---------- 3 · Final de marca ---------- */
+  const a = B, kt = KT('Tu factura en 30 segundos.|Gratis y sin registro.', { start: 1.1, size: 56, w: 600, c: PAPEL, ac: PAPEL });
+  ev(a, 'whoosh', 1); ev(a + 0.35, 'boom', 1); ev(a + 0.45, 'confetti', 1); ktEvents(a, kt); ev(a + 2.4, 'ding', 0.9); ev(a + 2.75, 'boom', 0.8); ev(a + 2.82, 'bell', 0.9); ev(a + 3.4, 'sparkle');
+  scene(a, a + 6.2, (lt) => {
+    const rad = eio(P(lt, 0, 0.6)) * 1500;
+    K.save(); K.beginPath(); K.arc(540, 820, rad, 0, 7); K.clip();
+    const g = K.createLinearGradient(0, 0, 0, H); g.addColorStop(0, '#22304F'); g.addColorStop(0.6, '#17223B'); g.addColorStop(1, '#0E1526'); K.fillStyle = g; K.fillRect(0, 0, W, H);
+    K.strokeStyle = 'rgba(231,236,241,.06)'; K.lineWidth = 2; for (let y = 96; y < H; y += 96) { K.beginPath(); K.moveTo(0, y); K.lineTo(W, y); K.stroke(); }
+    const gl = K.createRadialGradient(540, 760, 0, 540, 760, 720); gl.addColorStop(0, 'rgba(231,236,241,.16)'); gl.addColorStop(1, 'rgba(231,236,241,0)'); K.fillStyle = gl; K.fillRect(0, 0, W, H);
+    const ip = P(lt, 0.3, 0.9), s = eb(ip);
+    if (ip > 0) { K.save(); K.translate(540, 700); K.scale(s, s); K.translate(-540, -700); talIcon(540, 700, 300, true); K.restore(); }
+    confetti(540, 700, lt - 0.45, 120, 9, 1);
+    pop(540, 960, P(lt, 0.7, 1.2), () => txt('Talonario', 540, 1008, { size: 140, w: 700, c: PAPEL, align: 'center' }));
+    drawKT(kt, 540, 1150, lt);
+    pop(540, 1320, P(lt, 2.4, 2.9), () => {
+      K.save(); K.shadowColor = 'rgba(0,0,0,.3)'; K.shadowBlur = 40; K.shadowOffsetY = 14; rr(190, 1265, 700, 110, 55, PAPEL); K.restore();
+      txt('Gratis · talonario.app', 540, 1337, { size: 48, w: 700, c: TINTA, align: 'center' });
+      const sh = P(lt, 2.9, 3.6); if (sh > 0 && sh < 1) { K.save(); K.beginPath(); K.roundRect(190, 1265, 700, 110, 55); K.clip(); const sx = 110 + sh * 920; const lg = K.createLinearGradient(sx - 80, 0, sx + 80, 0); lg.addColorStop(0, 'rgba(255,255,255,0)'); lg.addColorStop(0.5, 'rgba(255,255,255,.7)'); lg.addColorStop(1, 'rgba(255,255,255,0)'); K.fillStyle = lg; K.fillRect(190, 1265, 700, 110); K.restore(); }
+    });
+    txt('Pro: sin marca de agua, tu logo y clientes guardados', 540, 1436, { size: 32, w: 500, c: 'rgba(231,236,241,.94)', align: 'center', a: P(lt, 3.0, 3.5) });
+    txt('19 € una sola vez', 540, 1484, { size: 32, w: 600, c: 'rgba(231,236,241,.94)', align: 'center', a: P(lt, 3.1, 3.6) });
+    stamp(850, 1000, (lt - 2.7) / 0.35, { text: 'GRATIS', fs: 48, rot: -14, blend: false, c: '#E25A50', a: 0.95 });
+    K.restore();
+  }, { overlay: true });
+}
+finalize();
+// Además de la fuente de interfaz, el motor debe esperar a la monoespaciada (importes y sello)
+window.ready = window.ready.then(() => Promise.all(['700', '500'].map((w) => document.fonts.load(`${w} 100px "IBM Plex Mono"`))).then(() => true));
+</script></body></html>

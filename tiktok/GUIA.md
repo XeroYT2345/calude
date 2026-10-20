@@ -79,3 +79,22 @@ node tiktok/promo.mjs --page promo-real.html --stills   # solo fotogramas suelto
 - **Con otra grabación:** cambia en `clips.json` los segundos `in`/`out` de cada fragmento (y `speed` para acelerarlo).
 - **Textos:** los títulos de cada tramo están en `promo-real.html` (`add({ head: … })`). Usa `*palabra*` para ponerla en naranja y `|` para el salto de línea.
 - `engine.js` tiene lo común: mascota, móvil, tarjetas, tipografía animada y transiciones.
+
+## Anuncio de Talonario (`promo-talonario.html`)
+
+El mismo motor sirve para otros productos: `engine.js` lee `window.THEME` (colores, fuentes, fondo) si la página lo define antes
+de cargarlo; sin THEME, los anuncios de AniRadar se dibujan exactamente igual. `promo-talonario.html` usa el tema de Talonario
+(papel, tinta, sello rojo, Bricolage Grotesque e IBM Plex Mono desde `fonts-talonario/`) y, en lugar de la mascota, el sello de goma.
+
+Los fragmentos del móvil son la app real grabada con Playwright (`clips/cliente`, `concepto`, `linea`, `hoja`, `pagada`, `pdf`),
+con las marcas de cada tecla, toque y golpe de sello guardadas en `clips/index.js` para sincronizar los efectos.
+
+```bash
+node tiktok/clips-talonario.mjs                                   # 1) graba la app (talonario/index.html) en un móvil de 390×755; ~1 min
+node tiktok/promo.mjs --page promo-talonario.html --name talonario --stills   # fotogramas sueltos para revisar (TIMES=1,5,20 para elegirlos)
+node tiktok/promo.mjs --page promo-talonario.html --name talonario           # 2) renderiza talonario.mp4 y talonario-sin-musica.mp4 (~38 s)
+```
+
+- **Textos:** los títulos de cada tramo están en `promo-talonario.html` (`add({ head: … })`); `*palabra*` la pone en rojo sello y `|` salta de línea.
+- **Otra grabación:** cambia las acciones en `clips-talonario.mjs` (`record('id', …)`); `--only cliente,pdf` regraba solo esos y conserva el resto.
+- Todo lo que dice el vídeo lo hace la web: gratis, sin registro, IVA e IRPF automáticos, sello «Pagada», PDF, y Pro a 19 € una sola vez.
