@@ -22,6 +22,7 @@ const server = http.createServer((req, res) => {
 await new Promise((r) => server.once('listening', r));
 const URL_ = `http://127.0.0.1:${server.address().port}/index.html`;
 
+const norm = (s) => String(s).replace(/[\u00A0\u202F]/g, ' ').trim();
 let fallos = 0; const ok = (cond, msg) => { console.log((cond ? '  ✓ ' : '  ✗ ') + msg); if (!cond) fallos++; };
 const browser = await chromium.launch(launch);
 const fill = (p) => p.evaluate(() => {
@@ -44,7 +45,7 @@ try {
   ok(await p.locator('#campoExento').isHidden(), 'el motivo del 0 % de IVA empieza oculto');
   ok((await p.textContent('#aviso')).startsWith('Para descargar falta'), 'aviso neutro antes de intentar descargar');
   await fill(p); await p.waitForTimeout(300);
-  ok((await p.textContent('#totalVivo')) === '1.749,00 €', 'total 1.749,00 € (base 1.650 + IVA 346,50 − IRPF 247,50)');
+  ok(norm(await p.textContent('#totalVivo')) === '1.749,00 €', 'total 1.749,00 € (base 1.650 + IVA 346,50 − IRPF 247,50)');
   ok((await p.textContent('#aviso')) === '', 'sin avisos con la factura completa');
   ok(fontReq.length > 0 && fontReq.every((s) => s === 200), `fuentes locales cargan (${fontReq.length} archivos)`);
   ok(await p.evaluate(() => [...document.fonts].some((f) => f.family === 'Bricolage Grotesque' && f.status === 'loaded')), 'Bricolage Grotesque cargada sin Google');
