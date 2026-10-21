@@ -39,7 +39,7 @@
   --raya: #C4CFDA;
   --raya-campo: #7A8696;
   --lapiz: #5B6878;
-  --placeholder: #66727F;
+  --placeholder: #5B6878;
   --raya-suave: #DCE3EA;
   --ui: "Bricolage Grotesque", "Helvetica Neue", Arial, sans-serif;
   --doc: "IBM Plex Mono", "Courier New", monospace;
@@ -170,7 +170,8 @@ button { cursor: pointer; }
 .hoja table.items td { padding: 2.4mm 0; border-bottom: 1px solid var(--raya-suave); vertical-align: top; }
 .hoja table.items th.n, .hoja table.items td.n { text-align: right; font-variant-numeric: tabular-nums; padding-left: 3mm; }
 .hoja table.items th.n { white-space: nowrap; }
-.hoja table.items col.c-cant { width: 14mm; } .hoja table.items col.c-precio { width: 30mm; } .hoja table.items col.c-iva { width: 16mm; } .hoja table.items col.c-imp { width: 32mm; }
+.hoja table.items col.c-cant { width: 14mm; } .hoja table.items col.c-precio { width: 33mm; } .hoja table.items col.c-iva { width: 16mm; } .hoja table.items col.c-imp { width: 35mm; }
+.hoja table.items td.n { overflow-wrap: anywhere; }
 .hoja td.concepto { padding-right: 3mm; white-space: pre-line; overflow-wrap: anywhere; }
 .hoja .vacio { color: #6B7280; }
 .totales { margin: 6mm 0 0 auto; width: 90mm; font-size: 9.5pt; }
@@ -216,7 +217,7 @@ button { cursor: pointer; }
 .barra .aviso:empty { display: none; }
 
 /* toast */
-.toast { position: fixed; left: 50%; bottom: 100px; transform: translateX(-50%); background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: 90vw; z-index: 40; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
+.toast { position: fixed; left: 50%; bottom: calc(var(--barra-h, 0px) + 24px); transform: translateX(-50%); background: var(--tinta); color: #fff; padding: 10px 16px; border-radius: 8px; font-size: 14px; max-width: 90vw; z-index: 40; opacity: 0; transition: opacity 180ms ease; pointer-events: none; }
 .toast.on { opacity: 1; }
 
 /* ---------- secciones de abajo ---------- */
@@ -313,6 +314,12 @@ dialog.fallback[open] { position: fixed; top: 50%; left: 50%; transform: transla
   .acciones-form { display: block; margin-top: 8px; }
   .porque { grid-template-columns: 1fr; gap: 18px; }
   .btn-ampliar { display: inline-flex; }
+}
+@media (pointer: coarse) {
+  .linea { grid-template-columns: minmax(0, 1fr) 54px 84px 58px 44px; }
+  .linea .quitar { width: 44px; height: 44px; }
+  .hoja-opciones input[type="checkbox"] { width: 22px; height: 22px; }
+  .hoja-opciones label { min-height: 44px; }
 }
 @media (max-width: 1023px) and (max-height: 480px) {
   .barra { position: static; }
@@ -480,7 +487,7 @@ dialog.fallback[open] { position: fixed; top: 50%; left: 50%; transform: transla
       <tr><td>Facturas y PDF sin límite</td><td class="si">Sí</td><td class="si">Sí</td></tr>
       <tr><td>IVA, retención y numeración automática</td><td class="si">Sí</td><td class="si">Sí</td></tr>
       <tr><td>Sello «Pagada»</td><td class="si">Sí</td><td class="si">Sí</td></tr>
-      <tr><td>Línea «Hecho con Talonario» al pie del PDF</td><td>Aparece</td><td class="si">No aparece</td></tr>
+      <tr><td>Línea «Hecho con Talonario» en el PDF</td><td>Aparece</td><td class="si">No aparece</td></tr>
       <tr><td>Tu logo en la factura</td><td class="no">No</td><td class="si">Sí</td></tr>
       <tr><td>Clientes guardados y autocompletado</td><td class="no">No</td><td class="si">Sí</td></tr>
       <tr><td>Historial: reabre, duplica y descarga facturas anteriores</td><td class="no">No</td><td class="si">Sí</td></tr>
@@ -553,6 +560,7 @@ dialog.fallback[open] { position: fixed; top: 50%; left: 50%; transform: transla
 <dialog id="dlgVista" aria-label="Vista previa a tamaño real">
   <div class="dlg">
     <button type="button" class="dlg-cerrar" data-cierra="dlgVista" aria-label="Cerrar">×</button>
+    <p class="pista" style="margin:0 0 8px">Desliza para ver toda la hoja; en el PDF sale entera.</p>
     <div class="vista-scroll" id="vistaScroll"></div>
   </div>
 </dialog>
@@ -581,8 +589,8 @@ const DOCS_ES = ['factura', 'simplificada', 'presupuesto', 'proforma', 'recibo']
 const PRESETS = {
   ES: { label: 'España (€)', currency: 'EUR', locale: 'es-ES', tax: 'IVA', rates: [21, 10, 4, 0], ret: null, retLabel: 'Retención (%)', taxId: 'NIF', es: true, exentos: 'iva', docs: DOCS_ES, exempt: '' },
   'ES-IC': { label: 'Canarias (€, IGIC)', currency: 'EUR', locale: 'es-ES', tax: 'IGIC', rates: [7, 3, 0, 9.5, 15, 20], ret: null, retLabel: 'Retención (%)', taxId: 'NIF', es: true, exentos: 'igic', docs: DOCS_ES, exempt: '', nota: 'En Canarias se aplica el IGIC en lugar del IVA (tipo general 7 %). Si tu cliente está fuera de Canarias, la operación suele ir sin IGIC: pon 0 y elige el motivo.' },
-  'ES-CM': { label: 'Ceuta y Melilla (€, IPSI)', currency: 'EUR', locale: 'es-ES', tax: 'IPSI', rates: [4, 10, 2, 1, 0.5, 0], ret: null, retLabel: 'Retención (%)', taxId: 'NIF', es: true, docs: DOCS_ES, exempt: '', nota: 'En Ceuta y Melilla se aplica el IPSI en lugar del IVA (los servicios suelen ir al 4 %). Si pones 0, explica el motivo en las notas.' },
-  EU: { label: 'España, cliente empresa en otro país de la UE (€)', currency: 'EUR', locale: 'es-ES', tax: 'IVA', rates: [0, 21, 10, 4], ret: 0, retLabel: 'Retención (%)', taxId: 'NIF-IVA', exentos: 'iva', docs: ['factura', 'presupuesto', 'proforma'], exempt: 'Inversión del sujeto pasivo / Reverse charge. Operación no sujeta al IVA español (artículo 69.Uno.1.º de la Ley 37/1992); sujeto pasivo el destinatario (artículo 196 de la Directiva 2006/112/CE).', nota: 'Para una empresa de otro país de la UE con NIF-IVA: la factura va sin IVA con la mención de inversión del sujeto pasivo y el NIF-IVA de las dos partes (el tuyo con prefijo ES y dado de alta en el VIES). A particulares de la UE se les cobra IVA español, salvo que estés en la ventanilla única (OSS).' },
+  'ES-CM': { label: 'Ceuta y Melilla (€, IPSI)', currency: 'EUR', locale: 'es-ES', tax: 'IPSI', rates: [4, 10, 2, 1, 0.5, 0], ret: null, retLabel: 'Retención (%)', taxId: 'NIF', es: true, exentos: 'ipsi', docs: DOCS_ES, exempt: '', nota: 'En Ceuta y Melilla se aplica el IPSI en lugar del IVA (los servicios suelen ir al 4 %). Si pones 0, elige el motivo.' },
+  EU: { label: 'España → empresa de la UE (€)', currency: 'EUR', locale: 'es-ES', tax: 'IVA', rates: [0, 21, 10, 4], ret: 0, retLabel: 'Retención (%)', taxId: 'NIF-IVA', exentos: 'iva', docs: ['factura', 'presupuesto', 'proforma'], exempt: 'Inversión del sujeto pasivo / Reverse charge. Operación no sujeta al IVA español (artículo 69.Uno.1.º de la Ley 37/1992); sujeto pasivo el destinatario (artículo 196 de la Directiva 2006/112/CE).', nota: 'Para una empresa de otro país de la UE con NIF-IVA: la factura va sin IVA con la mención de inversión del sujeto pasivo y el NIF-IVA de las dos partes (el tuyo con prefijo ES y dado de alta en el VIES). A particulares de la UE se les cobra IVA español, salvo que estés en la ventanilla única (OSS).' },
   MX: { label: 'México ($)', currency: 'MXN', locale: 'es-MX', tax: 'IVA', rates: [16, 8, 0], ret: 0, retLabel: 'Retención (%)', taxId: 'RFC', docs: ['recibo', 'presupuesto', 'cuenta'], nota: 'En México la factura fiscal es el CFDI, que se timbra con el SAT. Este documento sirve como recibo o presupuesto. La retención es un porcentaje sobre la base que fijas tú (por ejemplo, el 10 % de ISR que retienen las personas morales por honorarios).' },
   AR: { label: 'Argentina ($)', currency: 'ARS', locale: 'es-AR', tax: 'IVA', rates: [21, 10.5, 27, 0], ret: 0, retLabel: 'Retención (%)', taxId: 'CUIT', docs: ['recibo', 'presupuesto', 'cuenta'], nota: 'En Argentina la factura se emite de forma electrónica con ARCA (antes AFIP). Este documento sirve como recibo o presupuesto.' },
   CO: { label: 'Colombia ($)', currency: 'COP', locale: 'es-CO', tax: 'IVA', rates: [19, 5, 0], ret: 0, retLabel: 'Retención (%)', taxId: 'NIT', docs: ['cuenta', 'recibo', 'presupuesto'], nota: 'En Colombia la factura electrónica se emite con la DIAN. Si no eres responsable de IVA, la cuenta de cobro es el documento habitual.' },
@@ -592,7 +600,8 @@ const PRESETS = {
 };
 const EXENTOS = {
   iva: [['Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992.', 'Exenta (art. 20 LIVA)'], ['Operación exenta de IVA conforme al artículo 20.Uno.9.º de la Ley 37/1992 (formación).', 'Formación exenta (art. 20.Uno.9.º LIVA)'], ['Operación no sujeta a IVA por reglas de localización (artículos 69 y 70 de la Ley 37/1992).', 'No sujeta: cliente fuera de España (arts. 69-70 LIVA)'], ['Operación no sujeta a IVA conforme al artículo 7 de la Ley 37/1992.', 'No sujeta (art. 7 LIVA)'], ['Inversión del sujeto pasivo / Reverse charge. Operación no sujeta al IVA español (artículo 69.Uno.1.º de la Ley 37/1992); sujeto pasivo el destinatario (artículo 196 de la Directiva 2006/112/CE).', 'Inversión del sujeto pasivo: empresa de otro país de la UE']],
-  igic: [['Operación exenta de IGIC conforme al artículo 10 de la Ley 20/1991.', 'Exenta (art. 10 Ley 20/1991)'], ['Operación no sujeta al IGIC por reglas de localización (artículo 17 de la Ley 20/1991).', 'No sujeta: cliente fuera de Canarias (art. 17 Ley 20/1991)'], ['Inversión del sujeto pasivo conforme al artículo 19.1.2.º de la Ley 20/1991.', 'Inversión del sujeto pasivo (art. 19.1.2.º Ley 20/1991)']]
+  igic: [['Operación exenta de IGIC conforme al artículo 10 de la Ley 20/1991.', 'Exenta (art. 10 Ley 20/1991)'], ['Operación no sujeta al IGIC por reglas de localización (artículo 17 de la Ley 20/1991).', 'No sujeta: cliente fuera de Canarias (art. 17 Ley 20/1991)'], ['Inversión del sujeto pasivo conforme al artículo 19.1.2.º de la Ley 20/1991.', 'Inversión del sujeto pasivo (art. 19.1.2.º Ley 20/1991)']],
+  ipsi: [['Operación exenta del IPSI (Ley 8/1991).', 'Exenta'], ['Operación no sujeta al IPSI: servicio prestado fuera de Ceuta y Melilla (Ley 8/1991).', 'No sujeta: cliente fuera de Ceuta y Melilla']]
 };
 const EXENTOS_ANTIGUOS = { 'Inversión del sujeto pasivo conforme al artículo 84 de la Ley 37/1992.': EXENTOS.iva[4][0], 'Inversión del sujeto pasivo conforme al artículo 84.Uno.2.º de la Ley 37/1992.': EXENTOS.iva[4][0] };
 const $ = (s) => document.querySelector(s);
@@ -621,7 +630,7 @@ function num(v) {
   else if (pd >= 0 || pc >= 0) {
     const sep = pd >= 0 ? '.' : ','; const partes = s.split(sep);
     // Un solo separador: es de miles si el país lo usa así, va seguido de exactamente 3 cifras y la parte entera no es 0; si aparece varias veces, siempre es de miles
-    const miles = partes.length > 2 || (sep === grp && sep !== dec && partes[1].length === 3 && partes[0] !== '' && partes[0] !== '0');
+    const miles = partes.length > 2 || (sep === grp && sep !== dec && partes[1].length === 3 && partes[0] !== '' && !/^0+$/.test(partes[0]));
     s = miles ? partes.join('') : partes[0] + '.' + partes.slice(1).join('');
   }
   const n = parseFloat(s); return isFinite(n) ? (neg ? -n : n) : 0;
@@ -638,7 +647,7 @@ let pro = LS.get('tal_pro', null);
 const BASE = () => ({
   preset: 'ES', docType: 'factura', issuer: { name: '', nif: '', addr: '', email: '', phone: '', logo: '' }, client: { name: '', nif: '', addr: '', email: '' },
   serie: String(new Date().getFullYear()), number: '', date: hoy(), due: masDias(hoy(), 30), dueManual: false, opDate: '',
-  lines: [], ret: '', retSel: '', exemptReason: '', payment: '', notes: '', paid: false, paidDate: '', template: 'maquina', histId: '', ultimoRegistrado: '', huella: '', numberManual: false, clienteCargado: ''
+  lines: [], ret: '', retSel: '', exemptReason: '', payment: '', notes: '', paid: false, paidDate: '', template: 'maquina', histId: '', ultimoRegistrado: '', huella: '', numberManual: false, reabierta: false, clienteCargado: ''
 });
 const P = () => PRESETS[state && PRESETS[state.preset] ? state.preset : 'ES'];
 // Convierte lo que haya en localStorage (borrador o historial) en un estado válido, campo a campo
@@ -649,7 +658,7 @@ function sanear(d) {
   if (!s.retSel && s.ret !== '' && PRESETS[s.preset].es) s.retSel = ['0', '7', '15'].includes(s.ret) ? s.ret : 'otra'; // borradores de la versión anterior
   if (EXENTOS_ANTIGUOS[s.exemptReason]) s.exemptReason = EXENTOS_ANTIGUOS[s.exemptReason];
   const ex = PRESETS[s.preset].exentos; if (s.exemptReason && s.exemptReason !== '-' && !(ex && EXENTOS[ex].some((o) => o[0] === s.exemptReason))) s.exemptReason = '';
-  ['paid', 'dueManual', 'numberManual'].forEach((k) => { s[k] = !!d[k]; });
+  ['paid', 'dueManual', 'numberManual', 'reabierta'].forEach((k) => { s[k] = !!d[k]; });
   if (d.issuer && typeof d.issuer === 'object') Object.keys(s.issuer).forEach((k) => { if (typeof d.issuer[k] === 'string' && k !== 'logo') s.issuer[k] = d.issuer[k].slice(0, 4000); });
   if (d.client && typeof d.client === 'object') Object.keys(s.client).forEach((k) => { if (typeof d.client[k] === 'string') s.client[k] = d.client[k].slice(0, 4000); });
   const txt = (v, d) => (typeof v === 'number' && isFinite(v)) ? String(v) : (typeof v === 'string' ? v : d);
@@ -668,7 +677,7 @@ if (issuerGuardado && typeof issuerGuardado === 'object') {
   // La retención guardada solo vale en España (en otros países la factura no lleva IRPF)
   if (!state.retSel && P().es && (typeof issuerGuardado.retSel === 'string' || typeof issuerGuardado.ret === 'number')) { const r = typeof issuerGuardado.ret === 'number' ? String(issuerGuardado.ret) : (typeof issuerGuardado.ret === 'string' ? issuerGuardado.ret : ''); state.retSel = typeof issuerGuardado.retSel === 'string' ? issuerGuardado.retSel : (['0', '7', '15'].includes(r) ? r : 'otra'); state.ret = r; }
   // La versión anterior guardaba el logo dentro de tal_issuer: se pasa a tal_logo una vez
-  if (typeof issuerGuardado.logo === 'string' && LOGO_OK.test(issuerGuardado.logo) && !LS.get('tal_logo', '')) { LS.set('tal_logo', issuerGuardado.logo); const { logo, ...resto } = issuerGuardado; LS.set('tal_issuer', resto); }
+  if (typeof issuerGuardado.logo === 'string' && LOGO_OK.test(issuerGuardado.logo) && !LS.get('tal_logo', '') && LS.set('tal_logo', issuerGuardado.logo)) { const { logo, ...resto } = issuerGuardado; LS.set('tal_issuer', resto); }
 }
 const logoGuardado = LS.get('tal_logo', ''); if (typeof logoGuardado === 'string' && LOGO_OK.test(logoGuardado)) state.issuer.logo = logoGuardado;
 // Clave del contador: la serie; presupuestos y proformas cuentan aparte («presupuesto:2026»)
@@ -678,7 +687,7 @@ if (!P().docs.includes(state.docType)) state.docType = P().docs[0];
 if (!state.number) state.number = siguienteNumero();
 
 function siguienteNumero(serie) { const seq = LS.get('tal_seq', {}); const n = (seq && typeof seq === 'object' && +seq[claveSeq(serie)]) || 0; return String(n + 1).padStart(3, '0'); }
-const numSeq = () => { const m = /(\d+)\s*$/.exec(state.number || ''); return m ? parseInt(m[1], 10) : NaN; }; // las cifras finales del número («A-12» → 12)
+const numSeq = () => { const m = /^\D*(\d+)$/.exec(String(state.number || '').trim()); return m ? parseInt(m[1], 10) : NaN; }; // un solo bloque de cifras al final («A-12» → 12; «1/2026» no vale)
 const numeroCompleto = () => (state.serie ? state.serie + '-' : '') + (state.number || '');
 const NF = (loc, cur, opt) => { try { return new Intl.NumberFormat(loc, { style: 'currency', currency: cur, useGrouping: 'always', ...opt }); } catch (_) { return new Intl.NumberFormat(loc, { style: 'currency', currency: cur, ...opt }); } };
 const sinDecimales = (cur) => cur === 'COP' || cur === 'CLP';
@@ -711,7 +720,7 @@ function faltan() {
   if (state.docType === 'factura' && !state.client.nif.trim()) f.push({ q: 'el ' + p.taxId + ' del cliente' + sug, el: '#cNif' });
   if (state.docType === 'factura' && !state.client.addr.trim()) f.push({ q: 'el domicilio del cliente', el: '#cDir' });
   if (!state.number.trim()) f.push({ q: 'el número', el: '#fNum' });
-  else if (isNaN(numSeq())) f.push({ q: 'un número que termine en cifras (por ejemplo 001), para poder seguir la numeración', el: '#fNum' });
+  else if (isNaN(numSeq())) f.push({ q: 'un número con un solo bloque de cifras al final (001 o A-001); el año va en «Serie»', el: '#fNum' });
   if (!deIso(state.date)) f.push({ q: 'la fecha', el: '#fFecha' });
   const vivas = state.lines.filter(lineaViva);
   if (!vivas.some((l) => l.desc.trim() && num(l.price))) f.push({ q: 'al menos un concepto con precio', el: '#lineas .linea[data-i="0"] [data-f=desc]' });
@@ -723,6 +732,7 @@ function faltan() {
     if (isNaN(tasa(l.tax))) f.push({ q: `un ${p.tax} entre 0 y 100 en «${nombre}»`, el: sel('tax') });
   });
   if (p.es && state.docType === 'factura' && state.retSel === '') f.push({ q: 'indicar si lleva retención de IRPF', el: '#fRetSel' });
+  if (p.es && state.docType === 'factura' && state.retSel === 'otra' && String(state.ret).trim() === '') f.push({ q: 'el porcentaje de retención', el: '#fRet' });
   if (String(state.ret).trim() !== '' && (!numValido(state.ret) || num(state.ret) < 0 || num(state.ret) > 100)) f.push({ q: 'una retención entre 0 y 100', el: '#fRet' });
   if (hayExento() && (state.docType === 'factura' || state.docType === 'simplificada') && !state.exemptReason) f.push({ q: `el motivo del 0 % de ${p.tax}`, el: '#fExento' });
   return f;
@@ -742,7 +752,7 @@ function advertencias() {
   const n = numSeq(); const seq = LS.get('tal_seq', {}); const usado = seq && +seq[claveSeq()] || 0;
   if (n && n <= usado && !state.histId && numeroCompleto() !== state.ultimoRegistrado) a.push(`El número ${numeroCompleto()} ya se usó en este navegador; el siguiente libre es ${siguienteNumero()}.`);
   if (state.ultimoRegistrado && numeroCompleto() === state.ultimoRegistrado && state.huella && huella() !== state.huella) a.push(`Ya descargaste la ${numeroCompleto()} y has cambiado datos: si es otra factura, pulsa «Nueva factura» para usar el ${siguienteNumero()}; si corriges una ya enviada, hace falta una rectificativa.`);
-  if (pro) { const h = LS.get('tal_history', []); if (Array.isArray(h) && h.some((x) => x.numero === numeroCompleto() && x.id !== state.histId)) a.push(`Ya hay una factura ${numeroCompleto()} en tu historial.`); }
+  if (pro && historial().some((x) => x.numero === numeroCompleto() && x.id !== state.histId)) a.push(`Ya hay una factura ${numeroCompleto()} en tu historial.`);
   return a;
 }
 
@@ -763,6 +773,7 @@ function pintarFormulario() {
   $('#fRetLabel').textContent = es ? 'Retención IRPF (%)' : p.retLabel;
   $('#taxNombreCab').textContent = `importe sin ${p.tax}`;
   $('#fVenceLabel').textContent = esNumerada(state.docType) ? 'Vencimiento' : 'Válido hasta';
+  $('#btnNueva').textContent = state.docType === 'factura' || state.docType === 'simplificada' ? 'Nueva factura' : 'Nuevo documento';
   $('#optPagada').hidden = !esNumerada(state.docType);
   $('#chkPagada').checked = !!state.paid; $('#optFechaPago').hidden = !state.paid || !esNumerada(state.docType);
   $('#selPlantilla').value = state.template;
@@ -774,7 +785,7 @@ function pintarLineas() {
     state.lines.map((l, i) => `<div class="linea" data-i="${i}">
       <label class="celda c-desc"><span>Concepto</span><input data-f="desc" value="${esc(l.desc)}" autocomplete="off" placeholder="${i === 0 ? 'Diseño de la web corporativa' : 'Concepto'}"></label>
       <label class="celda"><span>Cantidad</span><input data-f="qty" class="num" inputmode="decimal" autocomplete="off" value="${esc(l.qty)}"></label>
-      <label class="celda"><span>Precio</span><input data-f="price" class="num" inputmode="decimal" autocomplete="off" value="${esc(l.price)}" placeholder="0,00"></label>
+      <label class="celda"><span>Precio</span><input data-f="price" class="num" inputmode="decimal" autocomplete="off" value="${esc(l.price)}" placeholder="0${separadores().dec}00"></label>
       <label class="celda"><span>${esc(p.tax)} %</span><input data-f="tax" class="num" inputmode="decimal" autocomplete="off" value="${esc(l.tax)}" list="ivaLista"></label>
       <button type="button" class="quitar" aria-label="Quitar línea ${i + 1}" ${state.lines.length === 1 ? 'disabled' : ''}>×</button>
     </div>`).join('') + `<datalist id="ivaLista">${p.rates.map((r) => `<option value="${r}">`).join('')}</datalist>`;
@@ -784,18 +795,23 @@ document.addEventListener('input', (e) => {
   const el = e.target;
   if (el.dataset.k) {
     if (el.dataset.k === 'preset') { cambiarPreset(el.value); return; }
+    if (el.dataset.k === 'docType') return; // lo gestiona el change de #fTipo (el select dispara input y change)
     escribir(el.dataset.k, el.value);
     if (el.dataset.k === 'date' && state.date && !state.dueManual) { state.due = masDias(state.date, 30); $('#fVence').value = state.due; }
     if (el.dataset.k === 'due') state.dueManual = true;
     if (el.dataset.k === 'number') state.numberManual = true;
+    // Cambiar el número o la serie de una factura ya descargada es empezar otra: la anterior se queda en el historial tal cual
+    if ((el.dataset.k === 'number' || el.dataset.k === 'serie') && state.histId && numeroCompleto() !== state.ultimoRegistrado) { state.histId = ''; state.ultimoRegistrado = ''; state.huella = ''; state.reabierta = false; }
     if (el.dataset.k === 'serie' && !state.histId && !state.numberManual) { state.number = siguienteNumero(); $('#fNum').value = state.number; }
+    if (el.dataset.k === 'paidDate' && pro && state.histId) guardarHistorial();
     if (el.dataset.k.startsWith('issuer.')) guardarEmisor();
     if (el.dataset.k === 'client.name') autocompletarCliente(el.value);
     render(); return;
   }
   if (el.dataset.f) { const row = el.closest('.linea'); state.lines[+row.dataset.i][el.dataset.f] = el.value; render(); }
 });
-function guardarEmisor() { const { logo, ...resto } = state.issuer; LS.set('tal_issuer', { ...resto, retSel: state.retSel, ret: state.ret }); }
+// La retención solo se guarda cuando es la elección real del emisor: en España y fuera de la factura simplificada (que la fuerza a 0)
+function guardarEmisor() { const { logo, ...resto } = state.issuer; const g = LS.get('tal_issuer', {}) || {}; const propia = P().es && state.docType !== 'simplificada'; LS.set('tal_issuer', { ...resto, retSel: propia ? state.retSel : (typeof g.retSel === 'string' ? g.retSel : ''), ret: propia ? state.ret : (typeof g.ret === 'string' ? g.ret : '') }); }
 $('#fRetSel').addEventListener('change', (e) => {
   state.retSel = e.target.value; if (state.retSel !== 'otra') { state.ret = state.retSel; $('#fRet').value = state.ret; }
   $('#campoRet').hidden = state.retSel !== 'otra'; if (state.retSel === 'otra') $('#fRet').focus(); guardarEmisor(); render();
@@ -815,12 +831,12 @@ function cambiarPreset(k) {
   if (!PRESETS[k]) return; const prev = P(); state.preset = k; const p = P();
   state.lines.forEach((l) => { if (String(l.tax).trim() === '' || num(l.tax) === prev.rates[0]) l.tax = String(p.rates[0]); });
   if (p.es && prev.es) { /* España ↔ Canarias: se conserva la retención */ } else if (p.es) { state.retSel = ''; state.ret = ''; } else { state.retSel = ''; state.ret = String(p.ret ?? 0); }
-  if (state.docType === prev.docs[0] || !p.docs.includes(state.docType)) { state.docType = p.docs[0]; state.number = siguienteNumero(); }
+  if (state.docType === prev.docs[0] || !p.docs.includes(state.docType)) { state.docType = p.docs[0]; if (!state.histId && !state.numberManual) state.number = siguienteNumero(); }
   if (!state.exemptReason || state.exemptReason === prev.exempt) state.exemptReason = p.exempt || '';
   pintarFormulario(); render();
 }
 $('#fTipo').addEventListener('change', (e) => {
-  const antes = state.docType; state.docType = e.target.value; if (!state.histId) state.number = siguienteNumero();
+  const antes = state.docType; state.docType = e.target.value; if (!state.histId && !state.numberManual) state.number = siguienteNumero();
   if (P().es && state.docType === 'simplificada') { state.retSel = '0'; state.ret = '0'; } // a un particular no se le retiene
   else if (P().es && antes === 'simplificada') { const g = LS.get('tal_issuer', {}) || {}; state.retSel = typeof g.retSel === 'string' ? g.retSel : ''; state.ret = typeof g.ret === 'string' ? g.ret : ''; }
   pintarFormulario(); render();
@@ -830,10 +846,9 @@ $('#selPlantilla').addEventListener('change', (e) => { state.template = e.target
 const hayTrabajo = () => state.lines.some(lineaViva) || state.client.name.trim();
 $('#btnNueva').addEventListener('click', () => {
   if (hayTrabajo() && !state.histId && !confirm('¿Empezar una factura nueva? Lo que hay en el formulario se descarta. ' + (pro ? 'Si ya descargaste el PDF, está en «Mis facturas».' : 'Si ya descargaste el PDF, guárdalo: aquí no se conserva.'))) return;
-  state.client = { name: '', nif: '', addr: '', email: '' }; state.lines = [linea()]; state.paid = false; state.paidDate = ''; state.opDate = ''; state.histId = ''; state.ultimoRegistrado = ''; state.huella = ''; state.numberManual = false; state.clienteCargado = ''; intento = false;
-  if (P().es && state.docType === 'simplificada') { state.docType = 'factura'; const g = LS.get('tal_issuer', {}) || {}; state.retSel = typeof g.retSel === 'string' ? g.retSel : ''; state.ret = typeof g.ret === 'string' ? g.ret : ''; }
+  state.client = { name: '', nif: '', addr: '', email: '' }; state.lines = [linea()]; state.paid = false; state.paidDate = ''; state.opDate = ''; state.histId = ''; state.ultimoRegistrado = ''; state.huella = ''; state.numberManual = false; state.reabierta = false; state.clienteCargado = ''; intento = false;
   state.date = hoy(); state.due = masDias(state.date, 30); state.dueManual = false; state.number = siguienteNumero();
-  pintarFormulario(); render(); $('#cNombre').focus();
+  pintarFormulario(); render(); const c = $('#cNombre'); c.focus({ preventScroll: true }); c.scrollIntoView({ block: 'center', behavior: 'smooth' });
 });
 
 /* ===================== la hoja ===================== */
@@ -883,7 +898,7 @@ function render(conGolpe) {
   const correo = $('#btnCorreo'); const listo = !f.length && state.ultimoRegistrado === numeroCompleto() && /\S+@\S+/.test(state.client.email);
   correo.hidden = !listo; if (listo) correo.href = `mailto:${encodeURIComponent(state.client.email.trim())}?subject=${encodeURIComponent(`${DOCS[state.docType] || 'Factura'} ${numeroCompleto()}`)}&body=${encodeURIComponent(`Hola,\n\nte adjunto la ${(DOCS[state.docType] || 'factura').toLowerCase()} ${numeroCompleto()} por ${fmt(t.total)}.\n\nGracias,\n${state.issuer.name}`)}`;
   LS.set('tal_draft', { ...state, issuer: { ...state.issuer, logo: '' } });
-  clearTimeout(histTimer); if (pro && state.histId) histTimer = setTimeout(() => { if (pro && state.histId) guardarHistorial(); }, 600); // una factura reabierta guarda sus cambios
+  clearTimeout(histTimer); if (pro && state.histId && state.reabierta) histTimer = setTimeout(() => { if (pro && state.histId && state.reabierta) guardarHistorial(); }, 600); // solo una factura reabierta desde «Mis facturas» guarda sus cambios; la recién descargada se queda como salió
   escalar();
 }
 let histTimer = 0;
@@ -925,16 +940,20 @@ $('#btnPdf').addEventListener('click', descargar); $('#btnPdfMovil').addEventLis
 function abrir(id) { const d = $('#' + id); if (typeof d.showModal === 'function') d.showModal(); else { d.classList.add('fallback'); d.setAttribute('open', ''); } }
 function cerrar(id) { const d = $('#' + id); if (typeof d.close === 'function' && d.open) d.close(); else d.removeAttribute('open'); }
 document.addEventListener('keydown', (e) => { if (e.key === 'Escape') { const d = document.querySelector('dialog.fallback[open]'); if (d) cerrar(d.id); } });
-window.addEventListener('hashchange', () => { const d = document.querySelector(location.hash ? location.hash : null); if (d && d.tagName === 'DETAILS') d.open = true; });
-if (location.hash) { try { const d = document.querySelector(location.hash); if (d && d.tagName === 'DETAILS') d.open = true; } catch (_) {} }
-if (typeof ResizeObserver === 'function') new ResizeObserver(() => { const b = $('.barra'); if (getComputedStyle(b).position === 'fixed') document.body.style.paddingBottom = b.offsetHeight + 12 + 'px'; else document.body.style.paddingBottom = ''; }).observe($('.barra'));
+function abrirFaq() { try { const d = document.getElementById(decodeURIComponent(location.hash.slice(1))); if (d && d.tagName === 'DETAILS') d.open = true; } catch (_) {} }
+window.addEventListener('hashchange', abrirFaq); abrirFaq();
+$('#pistaVerifactu').addEventListener('click', (e) => { if (e.target.tagName === 'A') { const d = document.getElementById('faq-verifactu'); if (d) d.open = true; } });
+if (typeof ResizeObserver === 'function') new ResizeObserver(() => {
+  const b = $('.barra'); const cs = getComputedStyle(b); const fija = cs.position === 'fixed' && cs.display !== 'none';
+  document.body.style.paddingBottom = fija ? b.offsetHeight + 12 + 'px' : ''; document.documentElement.style.setProperty('--barra-h', fija ? b.offsetHeight + 'px' : '0px');
+}).observe($('.barra'));
 
 /* ===================== Pro: clientes, historial, logo ===================== */
-function clientes() { const l = LS.get('tal_clients', []); return Array.isArray(l) ? l : []; }
+function clientes() { const l = LS.get('tal_clients', []); return Array.isArray(l) ? l.filter((x) => x && typeof x === 'object' && typeof x.name === 'string') : []; }
 function guardarCliente() {
   const c = state.client; if (!c.name.trim()) return; const list = clientes();
-  const i = list.findIndex((x) => (x.nif && x.nif === c.nif) || x.name.toLowerCase() === c.name.toLowerCase());
-  if (i >= 0) list[i] = { ...c, name: list[i].name.toLowerCase() === c.name.toLowerCase() ? list[i].name : c.name }; else list.unshift({ ...c }); LS.set('tal_clients', list.slice(0, 300)); pintarClientes();
+  const i = list.findIndex((x) => x.name.toLowerCase() === c.name.toLowerCase()); // por nombre: un NIF repetido por error no renombra otra ficha
+  if (i >= 0) list[i] = { ...c, name: list[i].name }; else list.unshift({ ...c }); LS.set('tal_clients', list.slice(0, 300)); pintarClientes();
 }
 function pintarClientes() {
   if (!pro) return; const list = clientes();
@@ -942,10 +961,14 @@ function pintarClientes() {
   $('#clientesPista').textContent = list.length ? `${list.length} guardado${list.length === 1 ? '' : 's'}` : 'se guardan al descargar';
 }
 function autocompletarCliente(name) {
-  if (!pro) return; const c = clientes().find((x) => x.name.toLowerCase() === name.trim().toLowerCase()); if (!c) return;
-  const otro = state.clienteCargado && state.clienteCargado !== c.name.toLowerCase(); // se ha cambiado a OTRO cliente guardado: se sustituyen sus datos
-  [['nif', 'cNif'], ['addr', 'cDir'], ['email', 'cEmail']].forEach(([k, id]) => { if ((otro || !state.client[k].trim()) && c[k]) { state.client[k] = c[k]; $('#' + id).value = c[k]; } });
-  if (state.client.name !== c.name) { state.client.name = c.name; $('#cNombre').value = c.name; } // se respeta cómo estaba escrito el nombre guardado
+  if (!pro) return; const c = clientes().find((x) => x.name.toLowerCase() === name.trim().toLowerCase());
+  if (!c) { // el nombre ya no es el del cliente cargado ni el de otro guardado: es un cliente nuevo y no hereda NIF ni domicilio
+    if (state.clienteCargado && name.trim().toLowerCase() !== state.clienteCargado) { [['nif', 'cNif'], ['addr', 'cDir'], ['email', 'cEmail']].forEach(([k, id]) => { state.client[k] = ''; $('#' + id).value = ''; }); state.clienteCargado = ''; }
+    return;
+  }
+  const otro = !!state.clienteCargado && state.clienteCargado !== c.name.toLowerCase(); let relleno = false; // se ha cambiado a OTRO cliente guardado: se sustituyen todos sus datos
+  [['nif', 'cNif'], ['addr', 'cDir'], ['email', 'cEmail']].forEach(([k, id]) => { if (otro || (!state.client[k].trim() && c[k])) { state.client[k] = c[k] || ''; $('#' + id).value = c[k] || ''; relleno = true; } });
+  if ((otro || relleno) && state.client.name !== c.name) { state.client.name = c.name; $('#cNombre').value = c.name; } // se respeta cómo estaba escrito el nombre guardado
   state.clienteCargado = c.name.toLowerCase();
 }
 function historial() { const h = LS.get('tal_history', []); return Array.isArray(h) ? h.filter((x) => x && typeof x === 'object' && typeof x.id === 'string') : []; }
@@ -963,13 +986,14 @@ function pintarHistorial() {
     <div class="ops"><button type="button" class="btn btn-plano" data-h="abrir" data-i="${i}" aria-label="Abrir ${esc(x.numero)}">Abrir</button><button type="button" class="btn btn-plano" data-h="dup" data-i="${i}" aria-label="Duplicar ${esc(x.numero)}">Duplicar</button><button type="button" class="btn btn-plano" data-h="borrar" data-i="${i}" aria-label="Borrar ${esc(x.numero)}">Borrar</button></div></div>`).join('');
 }
 $('#hist').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-h]'); if (!b) return; const h = historial(); const x = h[+b.dataset.i]; if (!x || !x.state) return;
-  if (b.dataset.h === 'borrar') { if (!confirm(`¿Borrar ${x.numero} del historial?`)) return; h.splice(+b.dataset.i, 1); LS.set('tal_history', h); pintarHistorial(); return; }
+  const b = e.target.closest('[data-h]'); if (!b) return; const h = historial(); const x = h[+b.dataset.i]; if (!x) return;
+  if (b.dataset.h === 'borrar') { if (!confirm(`¿Borrar ${x.numero} del historial?`)) return; h.splice(+b.dataset.i, 1); LS.set('tal_history', h); if (x.id === state.histId) { state.histId = ''; state.reabierta = false; } pintarHistorial(); return; }
+  if (!x.state || typeof x.state !== 'object') { avisar('Esa entrada está dañada y no se puede abrir.'); return; }
   if (hayTrabajo() && !state.histId && !confirm('Se sustituye lo que hay ahora en el formulario. ¿Continuar?')) return;
   const emisor = state.issuer; state = sanear(x.state); state.issuer = emisor; state.clienteCargado = state.client.name.toLowerCase();
   if (!state.lines.length) state.lines = [linea()];
-  if (b.dataset.h === 'dup') { state.histId = ''; state.ultimoRegistrado = ''; state.date = hoy(); state.due = masDias(state.date, 30); state.dueManual = false; state.number = siguienteNumero(); state.paid = false; state.paidDate = ''; }
-  else state.histId = x.id;
+  if (b.dataset.h === 'dup') { state.histId = ''; state.ultimoRegistrado = ''; state.huella = ''; state.reabierta = false; state.numberManual = false; state.date = hoy(); state.due = masDias(state.date, 30); state.dueManual = false; state.number = siguienteNumero(); state.paid = false; state.paidDate = ''; }
+  else { state.histId = x.id; state.reabierta = true; }
   cerrar('dlgHist'); pintarFormulario(); render(); window.scrollTo({ top: 0, behavior: 'smooth' });
 });
 $('#btnHistorial').addEventListener('click', () => { pintarHistorial(); abrir('dlgHist'); });
@@ -1009,6 +1033,7 @@ const SIN_RESPUESTA = { ok: false, msg: 'La plataforma de pago no respondió bie
 async function validarClave(key) {
   if (!CONFIG.checkoutUrl && CONFIG.demoCode && key === CONFIG.demoCode) return { ok: true, instancia: 'demo' };
   const leerJson = async (r) => { try { return await r.json(); } catch (_) { return null; } };
+  if (CONFIG.checkoutUrl && !CONFIG.productId) { console.warn('CONFIG.productId está vacío: sin él no se puede comprobar que la clave sea de Talonario Pro.'); return { ok: false, msg: 'La activación no está configurada todavía. Escríbenos y te la activamos.' }; }
   if (CONFIG.provider === 'gumroad') {
     const body = new URLSearchParams({ product_id: CONFIG.productId, license_key: key, increment_uses_count: 'true' });
     const r = await fetch('https://api.gumroad.com/v2/licenses/verify', { method: 'POST', body }); const j = await leerJson(r);
@@ -1018,7 +1043,6 @@ async function validarClave(key) {
     if (j.uses && j.uses > CONFIG.maxActivaciones) return { ok: false, msg: `Esta clave ya se usó en el máximo de dispositivos (${CONFIG.maxActivaciones}). Escríbenos y te ayudamos.` };
     return { ok: true, instancia: String(j.uses || '') };
   }
-  if (CONFIG.checkoutUrl && !CONFIG.productId) { console.warn('CONFIG.productId está vacío: sin él no se puede comprobar que la clave sea de Talonario Pro.'); return { ok: false, msg: 'La activación no está configurada todavía. Escríbenos y te la activamos.' }; }
   const nombre = 'Talonario · ' + (navigator.platform || 'navegador').slice(0, 30);
   const r = await fetch('https://api.lemonsqueezy.com/v1/licenses/activate', { method: 'POST', headers: { Accept: 'application/json' }, body: new URLSearchParams({ license_key: key, instance_name: nombre }) });
   const j = await leerJson(r);
@@ -1044,7 +1068,7 @@ $('#formPro').addEventListener('submit', async (e) => {
   st.className = 'estado'; st.textContent = 'Comprobando…'; btn.disabled = true;
   try {
     const r = await validarClave(key);
-    if (r.ok) { pro = { key, instancia: r.instancia, at: Date.now() }; LS.set('tal_pro', pro); st.className = 'estado ok'; st.textContent = 'Pro activado. Gracias.'; aplicarPro(); setTimeout(() => { cerrar('dlgPro'); $('#btnHistorial').focus(); }, 1500); }
+    if (r.ok) { pro = { key, instancia: r.instancia, at: Date.now() }; LS.set('tal_pro', pro); st.className = 'estado ok'; st.textContent = 'Pro activado. Gracias.'; aplicarPro(); setTimeout(() => { cerrar('dlgPro'); $('#btnHistorial').focus(); }, 3000); }
     else { st.className = 'estado mal'; st.textContent = r.msg; }
   } catch (_) { st.className = 'estado mal'; st.textContent = 'No se pudo comprobar la clave. Revisa tu conexión e inténtalo otra vez.'; }
   finally { btn.disabled = false; }

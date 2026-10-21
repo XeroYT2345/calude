@@ -111,9 +111,21 @@ try {
   await fill(p); await p.waitForTimeout(200); await p.click('#btnPdf'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => JSON.parse(localStorage.getItem('tal_history') || '[]').length === 1), 'Pro guarda la factura en el historial');
   ok(await p.evaluate(() => JSON.parse(localStorage.getItem('tal_clients') || '[]')[0]?.nif === 'B12345678'), 'Pro guarda el cliente');
+  await set(p, 'cNombre', 'Otro Cliente S.A.'); await setLinea(p, 0, 'price', '5'); await p.waitForTimeout(900);
+  ok(await p.evaluate(() => { const h = JSON.parse(localStorage.getItem('tal_history') || '[]'); return h.length === 1 && h[0].cliente === 'Estudio Norte S.L.' && h[0].total === 1749; }), 'teclear la siguiente factura sin pulsar «Nueva» no reescribe la anterior en el historial');
+  ok((await p.textContent('#aviso')).includes('Ya descargaste'), 'y avisa de que ese número ya se descargó con otros datos');
+  await set(p, 'cNombre', 'Estudio Norte S.L.'); await setLinea(p, 0, 'price', '1200'); await set(p, 'fSerie', '2027'); await p.waitForTimeout(900);
+  ok((await p.textContent('#aviso')) === '' && await p.evaluate(() => state.histId === '' && JSON.parse(localStorage.getItem('tal_history') || '[]').length === 1 && JSON.parse(localStorage.getItem('tal_history'))[0].numero === '2026-002'), 'cambiar la serie tras descargar empieza otra factura y conserva la 2026-002 en el historial');
+  await set(p, 'fSerie', '2026'); await p.waitForTimeout(100);
+  await p.click('#btnHistorial'); await p.click('#hist [data-h=borrar]'); await p.waitForTimeout(150); await p.keyboard.press('Escape'); await p.waitForTimeout(100);
+  await set(p, 'fNotas', 'hola'); await p.waitForTimeout(900);
+  ok(await p.evaluate(() => JSON.parse(localStorage.getItem('tal_history') || '[]').length === 0), 'borrar del historial una factura no la resucita al seguir escribiendo');
+  await set(p, 'fNotas', 'Gracias por confiar en mí. Pago a 30 días.');
   await p.click('#btnNueva'); await p.waitForTimeout(200); ok((await p.inputValue('#fNum')) === '003', 'tras la segunda factura pasa al 003');
   await set(p, 'cNif', 'X0000000X'); await set(p, 'cNombre', 'Estudio Norte S.L.'); await p.waitForTimeout(100);
   ok((await p.inputValue('#cNif')) === 'X0000000X' && (await p.inputValue('#cDir')) === 'Av. Diagonal 100, 08019 Barcelona', 'el autocompletado rellena solo los campos vacíos');
+  await set(p, 'cNombre', 'Cliente Nuevo S.L.'); await p.waitForTimeout(100);
+  ok((await p.inputValue('#cNif')) === '' && (await p.inputValue('#cDir')) === '', 'un cliente nuevo no hereda el NIF ni el domicilio del anterior');
   await setLinea(p, 0, 'desc', 'Consultoría'); await setLinea(p, 0, 'price', '500');
   await set(p, 'fPais', 'EU'); await p.waitForTimeout(200);
   ok((await p.textContent('#iNifLabel')) === 'NIF-IVA' && (await p.textContent('#hoja')).includes('Inversión del sujeto pasivo') && await p.locator('#campoRetSel').isHidden(), 'preset UE: NIF-IVA, inversión del sujeto pasivo y sin IRPF');
@@ -131,6 +143,9 @@ try {
   ok(pres[0] === '001' && pres[1] === 'Válido hasta' && pres[2] && pres[3] === 'Presupuesto', 'presupuesto: numeración propia, «Válido hasta» y sin sello' + (pres[0] === '001' && pres[2] ? '' : ' ' + JSON.stringify(pres)));
   await set(p, 'fTipo', 'simplificada'); await set(p, 'cNif', ''); await set(p, 'cDir', ''); await p.waitForTimeout(150);
   ok((await p.inputValue('#fNum')) === '003' && !(await p.textContent('#aviso')).startsWith('Para descargar') && (await p.textContent('#aviso')).includes('400') && (await p.inputValue('#fRetSel')) === '0', 'factura simplificada: sin datos del cliente, sin IRPF y aviso por encima de 400 €');
+  await set(p, 'iTel', '600 000 000'); await set(p, 'fTipo', 'factura'); await p.waitForTimeout(100);
+  ok((await p.inputValue('#fRetSel')) === '15', 'al volver a factura completa se recupera la retención del 15 % (la simplificada no la pisa)');
+  await set(p, 'fTipo', 'simplificada'); await p.waitForTimeout(100);
   await set(p, 'fTipo', 'factura'); await setLinea(p, 0, 'tax', '0'); await p.waitForTimeout(150);
   ok(!(await p.locator('#campoExento').isHidden()) && (await p.textContent('#aviso')).includes('motivo del 0 %'), 'con una línea al 0 % pide el motivo');
   await set(p, 'fExento', 'Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992.'); await p.waitForTimeout(100);
@@ -140,7 +155,11 @@ try {
   await set(p, 'fRetSel', '15');
   await set(p, 'fPais', 'MX'); await p.waitForTimeout(100); await p.reload(); await p.waitForTimeout(400);
   ok((await p.inputValue('#fPais')) === 'MX' && !(await p.textContent('#hoja')).includes('Retención'), 'al recargar en México no se cuela la retención guardada de España');
-  await set(p, 'fPais', 'ES');
+  await set(p, 'fPais', 'ES'); await set(p, 'fTipo', 'factura'); await set(p, 'fNum', '1/2026'); await p.waitForTimeout(100);
+  ok((await p.textContent('#aviso')).includes('bloque de cifras'), 'un número como «1/2026» se rechaza (el año va en la serie)');
+  await set(p, 'fNum', '045'); await set(p, 'fTipo', 'presupuesto'); await set(p, 'fPais', 'ES-IC'); await p.waitForTimeout(100);
+  ok((await p.inputValue('#fNum')) === '045', 'un número escrito a mano sobrevive al cambio de tipo y de normativa');
+  await set(p, 'fPais', 'ES'); await set(p, 'fTipo', 'factura');
   ok(errs.length === 0, 'sin errores de JavaScript' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await p.close();
 
