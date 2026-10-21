@@ -37,7 +37,7 @@ const ctx = await browser.newContext({ viewport: { width: 390, height: 755 }, de
 // Datos del emisor ya guardados (la app los recuerda «para la próxima») y forma de pago en el borrador; sin diálogo de impresión.
 await ctx.addInitScript(() => {
   localStorage.clear();
-  localStorage.setItem('tal_issuer', JSON.stringify({ name: 'Marta López Ruiz', nif: '12345678A', addr: 'Calle Mayor 3, 2.º B, 28013 Madrid', email: 'marta@ejemplo.com', phone: '' }));
+  localStorage.setItem('tal_issuer', JSON.stringify({ name: 'Marta López Ruiz', nif: '12345678A', addr: 'Calle Mayor 3, 2.º B, 28013 Madrid', email: 'marta@ejemplo.com', phone: '', retSel: '15', ret: '15' }));
   localStorage.setItem('tal_draft', JSON.stringify({ payment: 'Transferencia a ES12 3456 7890 1234 5678 9012', notes: 'Gracias por confiar en mí. Pago a 30 días.' }));
   window.print = () => {};
 });
@@ -108,6 +108,8 @@ await record('cliente', async () => {
   await type('#cNombre', 'Estudio Norte S.L.', 0.08);
   await sleep(0.3);
   await type('#cNif', 'B12345678', 0.09);
+  await sleep(0.3);
+  await type('#cDir', 'Av. Diagonal 100, Barcelona', 0.06);
   await sleep(0.7);
 });
 

@@ -304,8 +304,9 @@ dialog.fallback[open] { position: fixed; top: 50%; left: 50%; transform: transla
 /* ---------- responsive ---------- */
 @media (max-width: 1023px) {
   .panel { grid-template-columns: minmax(0, 1fr); gap: 28px; }
-  .hoja-col { position: static; max-height: none; overflow: visible; padding: 0; margin: 0; }
+  .hoja-col { position: static; max-height: none; overflow: visible; padding: 0; margin: 0; display: flex; flex-direction: column; }
   .hoja-col > .aviso { display: none; }
+  .hoja-marco { order: 1; } .hoja-opciones { order: 2; margin-top: 14px; } /* en móvil, las opciones debajo de la hoja */
   .hoja-acciones { display: none; }
   .barra { display: flex; flex-wrap: wrap; }
   body { padding-bottom: 96px; }
@@ -385,7 +386,7 @@ dialog.fallback[open] { position: fixed; top: 50%; left: 50%; transform: transla
       <section class="grp">
         <div class="grp-cab"><h2>Documento</h2></div>
         <div class="fila fila-3 fila-2m">
-          <div class="campo"><label for="fPais">Dónde facturas (normativa y moneda)</label><select id="fPais" data-k="preset"></select></div>
+          <div class="campo"><label for="fPais">Normativa y moneda</label><select id="fPais" data-k="preset"></select></div>
           <div class="campo"><label for="fTipo">Tipo</label><select id="fTipo" data-k="docType"></select></div>
           <div class="campo"><label for="fSerie">Serie</label><input id="fSerie" data-k="serie" autocomplete="off" placeholder="2026"></div>
           <div class="campo"><label for="fNum">Número</label><input id="fNum" data-k="number" aria-required="true" inputmode="numeric" autocomplete="off" placeholder="001"></div>
