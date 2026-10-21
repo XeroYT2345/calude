@@ -56,9 +56,16 @@ try {
   ok((await p.textContent('#aviso')) === '', 'sin avisos con la factura completa');
   for (const v of ['1.200,40', '1200,40', '1 200,40', '1200.40']) { await setLinea(p, 0, 'price', v); ok(await total(p) === '1.749,42 €', `entiende el precio escrito «${v}»`); }
   await setLinea(p, 0, 'price', '1.200'); ok(await total(p) === '1.749,00 €', 'entiende «1.200» como mil doscientos');
+  ok(JSON.stringify(await p.evaluate(() => [num('0.125'), num('0,125'), num('1,500'), num('1.000.000'), num('12,5'), num('abc'), num('-3,50')])) === '[0.125,0.125,1.5,1000000,12.5,0,-3.5]', 'en España: 0.125, 1,500 (=1,5), 1.000.000, 12,5, −3,50');
+  await set(p, 'fPais', 'MX'); await p.waitForTimeout(100);
+  ok(JSON.stringify(await p.evaluate(() => [num('1,500'), num('1,500.75'), num('1.5'), num('1,5'), num('0.125'), num('2,500,000')])) === '[1500,1500.75,1.5,1.5,0.125,2500000]', 'en México: 1,500 (=mil quinientos), 1,500.75, 1.5, 1,5, 0.125');
+  await set(p, 'fPais', 'ES'); await set(p, 'fRetSel', '15'); await p.waitForTimeout(100);
   await setLinea(p, 0, 'price', '1200');
   await p.click('#btnLinea'); await p.waitForTimeout(100);
   ok((await p.locator('#hoja table.items tbody tr').count()) === 2, 'una línea vacía no aparece en la hoja');
+  await setLinea(p, 2, 'price', '50'); await p.waitForTimeout(100);
+  ok((await p.textContent('#aviso')).includes('el concepto de la línea 3'), 'una línea con precio y sin concepto se señala');
+  await setLinea(p, 2, 'price', ''); await p.waitForTimeout(100);
   ok(await p.evaluate(() => document.querySelector('#impresion').innerHTML.includes('Marta López Ruiz')), 'la hoja de impresión se actualiza al escribir');
   await p.locator('#lineas .linea:not(.linea-cab)').last().locator('.quitar').click(); await p.waitForTimeout(100);
   ok(await p.evaluate(() => document.activeElement && document.activeElement.closest('#lineas') !== null), 'al quitar una línea el foco se queda en los conceptos');
@@ -83,13 +90,23 @@ try {
   await p.waitForTimeout(200);
   const pdf2 = path.join(out, 'factura-larga.pdf'); fs.writeFileSync(pdf2, await p.pdf({ format: 'A4', preferCSSPageSize: true, printBackground: true }));
   ok(paginas(pdf2) >= 2 && paginas(pdf2) <= 4, `una factura de 32 líneas largas ocupa entre dos y cuatro páginas (${paginas(pdf2)})`);
+  const textoPag = (file, n) => { try { return execFileSync('pdftotext', ['-f', String(n), '-l', String(n), file, '-'], { encoding: 'utf8' }); } catch (_) { return null; } };
+  const pags = Array.from({ length: paginas(pdf2) }, (_, i) => textoPag(pdf2, i + 1));
+  if (pags.every(Boolean)) {
+    ok(pags.every((t) => t.includes('Hecho con Talonario')), 'la línea de crédito está en todas las páginas del PDF largo');
+    ok(pags.some((t) => /\bTotal\b/.test(t) && t.includes('PAGADA')), 'el sello PAGADA cae en la misma página que el Total');
+    ok(pags.join('').split('Línea ').length - 1 === 30, 'no se pierde ninguna de las 30 líneas al paginar');
+  } else console.log('  · (sin pdftotext: se omiten tres comprobaciones del PDF largo)');
+  for (const f of ['aviso-legal.html', 'privacidad.html']) { const r = await p.request.get(URL_.replace(/[^/]*$/, f)); ok(r.status() === 200 && (await p.locator(`footer a[href="${f}"]`).count()) === 1, `${f} responde 200 y está enlazada en el pie`); }
   ok(await p.evaluate(() => { const ld = JSON.parse(document.querySelector('script[type="application/ld+json"]').textContent); const vis = [...document.querySelectorAll('.faq details')].map((d) => [d.querySelector('summary').textContent.trim(), d.querySelector('.resp').textContent.trim()]); return ld.mainEntity.length === vis.length && ld.mainEntity.every((q, i) => q.name === vis[i][0] && q.acceptedAnswer.text === vis[i][1]); }), 'el JSON-LD de la FAQ coincide con las preguntas visibles');
   await set(p, 'fNum', '001'); await p.waitForTimeout(100); await set(p, 'fNum', '001');
   await p.click('#btnNueva'); await p.waitForTimeout(200); ok((await p.inputValue('#fNum')) === '002', 'Nueva factura pasa al 002');
   await set(p, 'fNum', '001'); ok((await p.textContent('#aviso')).includes('ya se usó'), 'avisa si repites un número ya usado');
   await set(p, 'fNum', '002');
-  await p.click('#btnPro'); await p.fill('#inClave', 'TALONARIO-DEMO'); await p.press('#inClave', 'Enter'); await p.waitForTimeout(1200);
-  ok(await p.locator('#proInsignia').isVisible() && await p.locator('#btnPro').isHidden(), 'Pro se activa con el código de prueba pulsando Enter');
+  const productId = await p.evaluate(() => CONFIG.productId);
+  await p.route('**/api.lemonsqueezy.com/**', (r) => r.fulfill({ json: { activated: true, instance: { id: 'prueba' }, meta: { product_id: productId } } }));
+  await p.click('#btnPro'); await p.fill('#inClave', 'CLAVE-DE-PRUEBA'); await p.press('#inClave', 'Enter'); await p.waitForTimeout(600);
+  ok(await p.locator('#proInsignia').isVisible() && await p.locator('#btnPro').isHidden(), 'Pro se activa con la API de Lemon Squeezy (simulada) pulsando Enter');
   ok((await p.locator('#hoja .hoja-credito').count()) === 0, 'Pro quita la línea de crédito');
   await fill(p); await p.waitForTimeout(200); await p.click('#btnPdf'); await p.waitForTimeout(300);
   ok(await p.evaluate(() => JSON.parse(localStorage.getItem('tal_history') || '[]').length === 1), 'Pro guarda la factura en el historial');
@@ -106,14 +123,24 @@ try {
   ok((await p.textContent('#hoja .hoja-titulo')) === 'Factura' && (await p.inputValue('#fRetSel')) === '', 'volver a España restaura Factura y pide la retención');
   await set(p, 'fPais', 'ES-IC'); await p.waitForTimeout(200);
   ok((await p.textContent('#hoja')).includes('IGIC 7 %') && !(await p.locator('#campoRetSel').isHidden()), 'preset Canarias: IGIC al 7 % y retención de IRPF');
+  await setLinea(p, 0, 'tax', '0'); await p.waitForTimeout(100);
+  ok(!(await p.locator('#campoExento').isHidden()) && (await p.textContent('#fExento')).includes('Ley 20/1991'), 'en Canarias una línea al 0 % pide el motivo con las normas del IGIC');
+  await setLinea(p, 0, 'tax', '7');
   await set(p, 'fPais', 'ES'); await set(p, 'fTipo', 'presupuesto'); await p.waitForTimeout(150);
-  ok((await p.inputValue('#fNum')) === '001' && (await p.textContent('#fVenceLabel')) === 'Válido hasta' && await p.locator('#optPagada').isHidden() && (await p.textContent('#hoja .hoja-titulo')) === 'Presupuesto', 'presupuesto: numeración propia, «Válido hasta» y sin sello');
+  const pres = [await p.inputValue('#fNum'), await p.textContent('#fVenceLabel'), await p.locator('#optPagada').isHidden(), await p.textContent('#hoja .hoja-titulo')];
+  ok(pres[0] === '001' && pres[1] === 'Válido hasta' && pres[2] && pres[3] === 'Presupuesto', 'presupuesto: numeración propia, «Válido hasta» y sin sello' + (pres[0] === '001' && pres[2] ? '' : ' ' + JSON.stringify(pres)));
   await set(p, 'fTipo', 'simplificada'); await set(p, 'cNif', ''); await set(p, 'cDir', ''); await p.waitForTimeout(150);
-  ok((await p.inputValue('#fNum')) === '003' && !(await p.textContent('#aviso')).startsWith('Para descargar') && (await p.textContent('#aviso')).includes('400'), 'factura simplificada: sin datos del cliente y aviso por encima de 400 €');
+  ok((await p.inputValue('#fNum')) === '003' && !(await p.textContent('#aviso')).startsWith('Para descargar') && (await p.textContent('#aviso')).includes('400') && (await p.inputValue('#fRetSel')) === '0', 'factura simplificada: sin datos del cliente, sin IRPF y aviso por encima de 400 €');
   await set(p, 'fTipo', 'factura'); await setLinea(p, 0, 'tax', '0'); await p.waitForTimeout(150);
   ok(!(await p.locator('#campoExento').isHidden()) && (await p.textContent('#aviso')).includes('motivo del 0 %'), 'con una línea al 0 % pide el motivo');
   await set(p, 'fExento', 'Operación exenta de IVA conforme al artículo 20 de la Ley 37/1992.'); await p.waitForTimeout(100);
   ok((await p.textContent('#hoja')).includes('artículo 20') , 'la mención de exención sale en la hoja');
+  await set(p, 'fRetSel', 'otra'); await set(p, 'fRet', '150'); await p.waitForTimeout(100);
+  ok((await p.textContent('#aviso')).includes('retención entre 0 y 100'), 'una retención de 150 % se señala');
+  await set(p, 'fRetSel', '15');
+  await set(p, 'fPais', 'MX'); await p.waitForTimeout(100); await p.reload(); await p.waitForTimeout(400);
+  ok((await p.inputValue('#fPais')) === 'MX' && !(await p.textContent('#hoja')).includes('Retención'), 'al recargar en México no se cuela la retención guardada de España');
+  await set(p, 'fPais', 'ES');
   ok(errs.length === 0, 'sin errores de JavaScript' + (errs.length ? ': ' + errs.join(' | ') : ''));
   await p.close();
 

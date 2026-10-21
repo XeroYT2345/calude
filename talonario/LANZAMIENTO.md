@@ -21,13 +21,13 @@ Orden de trabajo para pasar de «está en el repositorio» a «cobra». Cada pas
 1. Crea la cuenta y la tienda. Activa el modo **Test** para probar sin cobrar.
 2. **Products → New product:** nombre «Talonario Pro», precio 19 €, tipo «Single payment». Marca el precio como **impuestos incluidos** (tax-inclusive): el aviso legal promete 19 € con impuestos.
 3. En el producto, pestaña **License keys:** actívalas y pon «Activation limit» en 3 (tres navegadores o dispositivos por compra). La app activa la clave en Lemon Squeezy al pegarla, así que ese límite se aplica de verdad.
-4. Pestaña **Checkout:** copia el enlace «Share → Checkout link». Ese es `CONFIG.checkoutUrl`.
+4. Pestaña **Checkout:** copia el enlace «Share → Checkout link». Ese es `CONFIG.checkoutUrl`. En la configuración del checkout activa la casilla de aceptar condiciones («Terms and conditions») con el enlace `https://TU-DOMINIO/aviso-legal.html#pro` y el texto «Entiendo que la clave se entrega al instante y pierdo el derecho de desistimiento»: es lo que exige la ley de consumidores para contenido digital.
 5. El id numérico del producto está en la URL del panel (`/products/123456`). Ese es `CONFIG.productId`.
 6. **Settings → Emails:** en el correo de entrega deja claro qué hacer con la clave. Texto sugerido:
 
    > Gracias por comprar Talonario Pro. Tu clave está abajo. Entra en talonario.app, pulsa «Pro · 19 €», pega la clave y dale a «Activar». Si cambias de navegador, vuelve a pegarla. ¿Algo no funciona? Responde a este correo.
 
-7. Haz una compra en modo Test, pega la clave en la web y comprueba que desaparece la línea «Hecho con Talonario» del PDF. Luego desactiva el modo Test.
+7. Haz una compra en modo Test, pega la clave en la web y comprueba que desaparece la línea «Hecho con Talonario» del PDF, y que el recibo marca 19,00 € con impuestos incluidos. Luego desactiva el modo Test.
 
 Lemon Squeezy actúa como vendedor oficial: calcula y liquida el IVA del comprador en cada país y te paga a ti el neto. Cobra una comisión por venta y no tiene cuota mensual.
 

@@ -27,11 +27,11 @@ Al pagar, la clave llega por correo. El usuario pulsa «Pro · 19 €», la pega
 ## Legal, antes de lanzar
 
 - **Aviso legal y privacidad:** ya están (`aviso-legal.html`, `privacidad.html`, enlazadas desde el pie). Busca `[[` en las dos y rellena nombre, NIF, dirección, correo, fecha, plataforma de pago y hosting. Si añades analítica, actualiza la página de privacidad.
-- **Veri*Factu:** es la obligación de que los programas de facturación en España registren cada factura ante la Agencia Tributaria. Se ha aplazado varias veces; la última previsión es 2027 (antes sociedades, después autónomos). Comprueba la fecha vigente en la web de la AEAT. La app lo dice junto al botón de descargar y en la FAQ. Cuando sea obligatoria, Talonario tal como está (un generador de PDF) no bastará para emitir facturas en España: tendrás que adaptarlo o limitarlo a presupuestos y a otros países.
+- **Veri*Factu:** es la obligación de que los programas de facturación en España registren cada factura ante la Agencia Tributaria. Se ha aplazado varias veces; la última previsión es 2027 (antes sociedades, después autónomos). Comprueba la fecha vigente en la web de la AEAT. La app lo dice junto al botón de descargar y en la FAQ. Cuando sea obligatoria, Talonario tal como está (un generador de PDF) no bastará para emitir facturas en España: tendrás que adaptarlo o limitarlo a presupuestos y a otros países. Ojo: el artículo 201 bis de la Ley General Tributaria sanciona a quien fabrica o comercializa programas de facturación que no cumplan el reglamento una vez en vigor. Talonario se presenta como generador de PDF, no como programa de facturación certificado; antes de cobrar a usuarios en España cuando la obligación esté vigente, consúltalo con un asesor.
 
 ## Cómo se promociona
 
-- **Buscar en Google:** la página está preparada para «hacer factura autónomo», «factura con retención IRPF», «generador de facturas gratis», «factura sin IVA». Las preguntas frecuentes llevan datos estructurados (FAQ) para salir con más espacio en los resultados.
+- **Buscar en Google:** la página está preparada para «hacer factura autónomo», «factura con retención IRPF», «generador de facturas gratis», «factura sin IVA». Las preguntas frecuentes llevan datos estructurados (FAQ): ayudan a Google a entender la página, aunque desde 2023 ya no dan resultados enriquecidos salvo a webs oficiales o sanitarias.
 - **TikTok y Reels:** el formato de los vídeos de AniRadar vale aquí. Ganchos: «Cómo hacer tu primera factura de autónomo en 30 segundos», «El error del IRPF que cometen todos los autónomos nuevos» (7 % vs 15 %), «Factura a un particular vs a una empresa».
 - **Donde están los autónomos:** grupos y foros de freelancers, Reddit (r/autonomos), comentarios en vídeos sobre darse de alta como autónomo.
 
@@ -41,6 +41,8 @@ Al pagar, la clave llega por correo. El usuario pulsa «Pro · 19 €», la pega
 - El número de factura se apunta como usado al pulsar «Descargar PDF» (y al imprimir con Ctrl+P). Si el usuario cancela la ventana de imprimir, el número ya está gastado: la app avisa y propone el siguiente libre; se puede corregir a mano.
 - Presupuestos y proformas tienen numeración propia y no gastan números de factura. La «Factura simplificada» (clientes particulares) no exige NIF ni domicilio del cliente y avisa por encima de 400 €.
 - Fuera de España (México, Argentina, Colombia, Chile, Perú) el documento es un recibo, cuenta de cobro o presupuesto, no la factura electrónica oficial; la app lo indica.
+- No hay modo «factura rectificativa» ni recargo de equivalencia: la FAQ explica cómo hacer una rectificativa a mano (serie R, importes negativos y referencia en las notas). Las retenciones de Latinoamérica son un porcentaje libre sobre la base.
+- Pro vuelve a comprobar la clave en Lemon Squeezy cada 30 días (una devolución la desactiva); si no hay red, no cambia nada.
 - Los datos viven en el navegador del usuario: si borra los datos de navegación, pierde el historial. La web lo avisa y Pro puede exportar una copia en JSON.
 - El PDF se genera con «Imprimir → Guardar como PDF» del navegador. Funciona en Chrome, Safari (también en iPhone), Firefox y Edge.
 
